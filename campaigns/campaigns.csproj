@@ -178,7 +178,8 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\CharacterSheetController.cs" />
+    <Compile Include="Controllers\CharacterSheetsController.cs" />
+    <Compile Include="Models\CharacterSheet.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Global.asax.cs">
@@ -250,10 +251,14 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\CharacterSheets\Create.cshtml" />
+    <Content Include="Views\CharacterSheets\Delete.cshtml" />
+    <Content Include="Views\CharacterSheets\Details.cshtml" />
+    <Content Include="Views\CharacterSheets\Edit.cshtml" />
+    <Content Include="Views\CharacterSheets\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\CharacterSheet\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
