@@ -46,15 +46,21 @@ namespace campaigns.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Description,Experience,Level,ProficiencyBonus")] CharacterSheet characterSheet)
+        public ActionResult Create([Bind(Include = "Name,Description,Experience,Level,ProficiencyBonus")] CharacterSheet characterSheet)
         {
-            if (ModelState.IsValid)
+            try
             {
-                db.CharacterSheets.Add(characterSheet);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                if (ModelState.IsValid)
+                {
+                    db.CharacterSheets.Add(characterSheet);
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
             }
-
+            catch (DataException)
+            {
+                ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
+            }
             return View(characterSheet);
         }
 
@@ -76,25 +82,46 @@ namespace campaigns.Controllers
         // POST: CharacterSheets/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Description,Experience,Level,ProficiencyBonus")] CharacterSheet characterSheet)
+        public ActionResult EditConfirmed(int? id)
         {
-            if (ModelState.IsValid)
+            // TODO: track only fields that change? send viewmodel through and use http://automapper.org/ ?
+            // Use db.Entry on the entity instance to set its state to Unchanged, and then set 
+            // Property("PropertyName").IsModified to true on each entity property that is included in the view model
+            if (id == null)
             {
-                db.Entry(characterSheet).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            return View(characterSheet);
+
+            var characterSheetToUpdate = db.CharacterSheets.Find(id);
+            if (TryUpdateModel(characterSheetToUpdate, "",
+                new string[] { "Name", "Description", "Experience", "Level", "ProficiencyBonus" }))
+            {
+                try
+                {
+                    db.SaveChanges();
+
+                    return RedirectToAction("Index");
+                }
+                catch (DataException)
+                {
+                    ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
+                }
+            }
+            return View(characterSheetToUpdate);
         }
 
         // GET: CharacterSheets/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int? id, bool? saveChangesError = false)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            if (saveChangesError.GetValueOrDefault())
+            {
+                ViewBag.ErrorMessage = "Delete failed - an error occurred while trying to save changes";
             }
             CharacterSheet characterSheet = db.CharacterSheets.Find(id);
             if (characterSheet == null)
@@ -105,13 +132,21 @@ namespace campaigns.Controllers
         }
 
         // POST: CharacterSheets/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public ActionResult Delete(int id)
         {
-            CharacterSheet characterSheet = db.CharacterSheets.Find(id);
-            db.CharacterSheets.Remove(characterSheet);
-            db.SaveChanges();
+            try
+            {
+                CharacterSheet characterSheet = db.CharacterSheets.Find(id);
+                db.CharacterSheets.Remove(characterSheet);
+                db.SaveChanges();
+            }
+            catch (DataException)
+            {
+                //Log the error (uncomment dex variable name and add a line here to write a log.
+                return RedirectToAction("Delete", new { id = id, saveChangesError = true });
+            }
             return RedirectToAction("Index");
         }
 
