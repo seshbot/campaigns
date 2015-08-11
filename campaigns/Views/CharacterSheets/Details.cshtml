@@ -16,26 +16,26 @@
         <a data-toggle="collapse" href="#characterDescription">Description &raquo;</a>
     </div>
     <div class="col-md-9">
-        <div class="row" style="padding-top:16px;">
+        <div class="row">
             <div class="col-md-4">
-                <abbr title="Class and Level">@Html.DisplayFor(model => model.Class.Name) Level @Html.DisplayFor(model => model.Level)</abbr>
+                <p class="form-control-static">@Html.DisplayFor(model => model.Class.Name) Level @Html.DisplayFor(model => model.Level)</p>
             </div>
             <div class="col-md-4">
-                <abbr title="Background">Noble</abbr>
+                <p class="form-control-static">Noble</p>
             </div>
             <div class="col-md-4">
-                <abbr title="Player">Paul</abbr>
+                <p class="form-control-static">Seshbot</p>
             </div>
         </div>
         <div class="row" style="padding-top:16px;">
             <div class="col-md-4">
-                <abbr title="Race">@Html.DisplayFor(model => model.Race.Name)</abbr>
+                <p class="form-control-static">@Html.DisplayFor(model => model.Race.Name)</p>
             </div>
             <div class="col-md-4">
-                <abbr title="Alignment">Neutral Good</abbr>
+                <p class="form-control-static">Neutral Good</p>
             </div>
             <div class="col-md-4">
-                <abbr title="Experience">@Html.DisplayFor(model => model.Experience) XP</abbr>
+                <p class="form-control-static">@Html.DisplayFor(model => model.Experience) XP</p>
             </div>
         </div>
     </div>
@@ -54,30 +54,13 @@
     <div class="col-md-4">
         <div class="row">
             <div class="col-md-3">
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center"><strong>Str</strong></div>
-                    <div class="panel-body text-center">12</div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center"><strong>Dex</strong></div>
-                    <div class="panel-body text-center">12</div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center"><strong>Con</strong></div>
-                    <div class="panel-body text-center">12</div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center"><strong>Int</strong></div>
-                    <div class="panel-body text-center">12</div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center"><strong>Wis</strong></div>
-                    <div class="panel-body text-center">12</div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center"><strong>Cha</strong></div>
-                    <div class="panel-body text-center">12</div>
-                </div>
+                @foreach (var ability in Model.Abilities)
+                {
+                    <div class="panel panel-default">
+                        <div class="panel-heading text-center"><strong>@ability.Ability.ShortName</strong></div>
+                        <div class="panel-body text-center">@ability.Points</div>
+                    </div>
+                }
             </div>
             <div class="col-md-9">
                 <div class="panel panel-default">
@@ -103,11 +86,10 @@
                 </div>
                 <div class="panel panel-default">
                     <table class="table table-striped table-hover">
-                        <tr><td width="20%" class="text-center">0</td><td><small>Acrobatics</small></td></tr>
-                        <tr><td class="text-center">1</td><td><small>Animal Handling</small></td></tr>
-                        <tr><td class="text-center">0</td><td><small>Arcana</small></td></tr>
-                        <tr><td class="text-center">0</td><td><small>Athletics</small></td></tr>
-                        <tr><td class="text-center">2</td><td><small>Deception</small></td></tr>
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <tr><td width="20%" class="text-center">@skill.Points</td><td><small>@skill.Skill.Name</small> (@skill.Skill.Ability.ShortName)</td></tr>
+                        }
                     </table>
                     <div class="panel-footer text-center"><strong>Skills</strong></div>
                 </div>
@@ -230,101 +212,6 @@
             <div class="panel-footer text-center"><small><strong>Features and Traits</strong></small></div>
         </div>
     </div>
-</div>
-
-
-
-
-
-
-<div>
-    <h4>CharacterSheet</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Experience)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Experience)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Level)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Level)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ProficiencyBonus)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ProficiencyBonus)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Abilities)
-        </dt>
-        <dd>
-            <table class="table">
-                @*
-                <tr>
-                    <th>Course Title</th>
-                    <th>Grade</th>
-                </tr>
-                *@
-                @foreach (var item in Model.Abilities)
-                {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Ability.Name)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Points)
-                        </td>
-                    </tr>
-                }
-            </table>
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Skills)
-        </dt>
-        <dd>
-            <table class="table">
-                @foreach (var item in Model.Skills)
-                {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Skill.Name)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Points)
-                        </td>
-                    </tr>
-                }
-            </table>
-        </dd>
-    </dl>
 </div>
 <p>
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |

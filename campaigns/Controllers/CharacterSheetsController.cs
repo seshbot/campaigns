@@ -7,6 +7,8 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using campaigns.Models;
+using campaigns.Helpers;
+using campaigns.Models.Api;
 
 namespace campaigns.Controllers
 {
@@ -38,28 +40,30 @@ namespace campaigns.Controllers
         // GET: CharacterSheets/Create
         public ActionResult Create()
         {
-            return View();
+            return View(db.CreateEmptyCharacterSheet());
         }
 
         // POST: CharacterSheets/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Name,Description,Experience,Level,ProficiencyBonus")] CharacterSheet characterSheet)
+        public ActionResult Create([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
         {
+            var newCharacterSheet = ApiHelper.CreateFromApiData(db, characterSheet);
             try
             {
                 if (ModelState.IsValid)
                 {
-                    db.CharacterSheets.Add(characterSheet);
+                    db.CharacterSheets.Add(newCharacterSheet);
                     db.SaveChanges();
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Details", new { Id = newCharacterSheet.Id });
                 }
             }
             catch (DataException)
             {
                 ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
             }
-            return View(characterSheet);
+            
+            return View(newCharacterSheet);
         }
 
         // GET: CharacterSheets/Edit/5
@@ -78,34 +82,34 @@ namespace campaigns.Controllers
         }
 
         // POST: CharacterSheets/Edit/5
-        [HttpPost, ActionName("Edit")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult EditConfirmed(int? id)
+        public ActionResult Edit(CharacterSheetDTO characterSheet)
         {
             // TODO: track only fields that change? send viewmodel through and use http://automapper.org/ ?
             // Use db.Entry on the entity instance to set its state to Unchanged, and then set 
             // Property("PropertyName").IsModified to true on each entity property that is included in the view model
-            if (id == null)
+            if (!characterSheet.Id.HasValue)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-
-            var characterSheetToUpdate = db.CharacterSheets.Find(id);
-            if (TryUpdateModel(characterSheetToUpdate, "",
-                new string[] { "Name", "Description", "Experience", "Level", "ProficiencyBonus" }))
+            
+            var newCharacterSheet = db.CharacterSheets.Find(characterSheet.Id);
+            db.Entry(newCharacterSheet).State = EntityState.Detached;
+            try
             {
-                try
-                {
-                    db.SaveChanges();
+                var updatedCharacterSheet = ApiHelper.UpdateFromApiData(db, newCharacterSheet, characterSheet);
+                db.CharacterSheets.Add(updatedCharacterSheet);
+                db.SaveChanges();
 
-                    return RedirectToAction("Index");
-                }
-                catch (DataException)
-                {
-                    ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
-                }
+                return RedirectToAction("Details", new { Id = updatedCharacterSheet.Id });
             }
-            return View(characterSheetToUpdate);
+            catch (DataException)
+            {
+                ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
+            }
+
+            return View(newCharacterSheet);
         }
 
         // GET: CharacterSheets/Delete/5

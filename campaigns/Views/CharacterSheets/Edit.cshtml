@@ -1,4 +1,5 @@
 ﻿@model campaigns.Models.CharacterSheet
+@using campaigns.Helpers
 
 @{
     ViewBag.Title = "Edit";
@@ -14,48 +15,72 @@
     <div class="form-horizontal">
         <h4>CharacterSheet</h4>
         <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.ValidationSummary(true, "", Html.CustomValidationAttributes())
         @Html.HiddenFor(model => model.Id)
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Name, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Name, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Name, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Description, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Description, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Description, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Experience, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Experience, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Experience, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Experience, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Experience, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Experience, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Level, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Level, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Level, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Level, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Level, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Level, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ProficiencyBonus, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.ProficiencyBonus, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ProficiencyBonus, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.ProficiencyBonus, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.ProficiencyBonus, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.ProficiencyBonus, "", Html.CustomValidationAttributes())
             </div>
         </div>
+
+        @for (var i = 0; i < Model.Abilities.Count(); i++)
+        {
+            <div class="form-group">
+                @Html.LabelFor(m => m.Abilities[i].Points, Model.Abilities[i].Ability.ShortName, Html.CustomLabelAttributes())
+                <div class="col-md-10">
+                    @Html.Hidden("Abilities[" + i + "].AbilityId", Model.Abilities[i].Ability.Id)
+                    @Html.EditorFor(m => m.Abilities[i].Points, Html.CustomEditorAttributes())
+                    @Html.ValidationMessageFor(m => m.Abilities[i].Points, "", Html.CustomValidationAttributes())
+                </div>
+            </div>
+        }
+
+        @for (var i = 0; i < Model.Skills.Count(); i++)
+        {
+            <div class="form-group">
+                @Html.LabelFor(m => m.Skills[i].Points, Model.Skills[i].Skill.Name, Html.CustomLabelAttributes())
+                <div class="col-md-10">
+                    @Html.Hidden("Skills[" + i + "].SkillId", Model.Skills[i].Skill.Id)
+                    @Html.EditorFor(m => m.Skills[i].Points, Html.CustomEditorAttributes())
+                    @Html.ValidationMessageFor(m => m.Skills[i].Points, "", Html.CustomValidationAttributes())
+                </div>
+            </div>
+        }
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
