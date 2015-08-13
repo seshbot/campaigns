@@ -14,33 +14,33 @@ namespace campaigns.Models
         {
             var races = new[]
             {
-                new Race { Name = "Dwarf", Description = "United by rich kingdoms of ancient grandeur, halls carved into roots of mountains with the echoing of picks and happers in deep mines and blazing forges, with a commitment to clan and tradition and a burning hatred of goblins and orcs.<br />Hardy, skilled warriors, miners, and workers of stone and metal. Standing well under 5 feet tall yet so broad as to weigh as much as a human. Known for their courage and endurance" },
-                new Race { Name = "Elf", Description = "Magical people of otherworldly grace, living in the world but not entirely part of it. Elves live in places of ethereal beauty, in the midst of ancient forests or in silvery spires glittering with faerie light.<br />Elves love nature and magic, and with unearthly grace range from well under 5 feet to just over 6 feet, living for well over 700 years" },
+                new Race { Name = "Dwarf", Description = "United by rich kingdoms of ancient grandeur, halls carved into roots of mountains with the echoing of picks and happers in deep mines and blazing forges, with a commitment to clan and tradition and a burning hatred of goblins and orcs.<p />Hardy, skilled warriors, miners, and workers of stone and metal. Standing well under 5 feet tall yet so broad as to weigh as much as a human. Known for their courage and endurance." },
+                new Race { Name = "Elf", Description = "Magical people of otherworldly grace, living in the world but not entirely part of it. Elves live in places of ethereal beauty, in the midst of ancient forests or in silvery spires glittering with faerie light.<p />Elves love nature and magic, and with unearthly grace range from well under 5 feet to just over 6 feet, living for well over 700 years." },
                 new Race { Name = "Halfling", Description = "With a love of comforts of home, peace and quiet, with blazing fires and generous meals, halflings survive in a world filled with larger creatures by avoiding notice. At about 3 feet tall, they have managed to survive for centuries in the shadow of empires and on the edges of wars and political strife." },
-                new Race { Name = "Human", Description = "The youngest of the common races, although short-lived they strive to achieve as much as they can in the years they are given.<br />With their penchant for migration and conquest, humans are more physically diverse than other common races" },
-                new Race { Name = "Dragonborn", Description = "Born of dragons they walk proudly through a world that greets them with fearful incomprehension. Shaped by draconic gods or the dragons themselves, dragonborn originally hatched from dragon eggs as a unique race, combining the best of dragons and humanoids and can be allied with either.<br />Their small, fine scales are usually brass or bronze in colour, and they are tall and strongly built, standing around 6 1/2 feet tall, with strong, talonlike claws with three fingers and a thumb on each hand" },
-                new Race { Name = "Gnome", Description = "Forming close-knit communities in warren-like neighbourhoods, they share a love of loud sounds such as explosions and grinding gears. Gnomes take delight in life, enjoying every moment of invention, exploration, investigation, creation and play.<br />Gnomes average a little over 3 feet tall, their tan-brown faces usually adorned with broad smiles beneath their prodigious noses" },
+                new Race { Name = "Human", Description = "The youngest of the common races, although short-lived they strive to achieve as much as they can in the years they are given.<p />With their penchant for migration and conquest, humans are more physically diverse than other common races." },
+                new Race { Name = "Dragonborn", Description = "Born of dragons they walk proudly through a world that greets them with fearful incomprehension. Shaped by draconic gods or the dragons themselves, dragonborn originally hatched from dragon eggs as a unique race, combining the best of dragons and humanoids and can be allied with either.<p />Their small, fine scales are usually brass or bronze in colour, and they are tall and strongly built, standing around 6 1/2 feet tall, with strong, talonlike claws with three fingers and a thumb on each hand." },
+                new Race { Name = "Gnome", Description = "Forming close-knit communities in warren-like neighbourhoods, they share a love of loud sounds such as explosions and grinding gears. Gnomes take delight in life, enjoying every moment of invention, exploration, investigation, creation and play.<p />Gnomes average a little over 3 feet tall, their tan-brown faces usually adorned with broad smiles beneath their prodigious noses." },
                 new Race { Name = "Half-Elf", Description = "Of two worlds yet truly belonging to neither, half-elves combine the best qualities of their elf and human parents: human curiosity, inventiveness and ambition tempered by the refined sences, love of nature and artistic tastes of the elves." },
-                new Race { Name = "Half-Orc", Description = "With grayish pigmentation, sloping foreheads, jutting jaws with prominient teeth and towering builds (between 6-7 feet tall), the half-orc's orcish heritage is plain for all to see. They can be found united under the leadership of mighty warlocks or joined with larger hordes of humans or orc tribes.<br />Any half-orc that has lived near orcs bears scars, whether marks of humiliation or pride" },
-                new Race { Name = "Tiefling", Description = "Tieflings are met with stares and whispers and suffer violence, insult, mistrust and fear at the hands of other civilised folk. Formed of an ancient pact that infused them with the essence of Asmodeus - the overlord of the Nine Hells - their appearance and nature are the result of some ancient sin for which they will always be held accountable.<br />Tieflings have large horns that may be curling or straight, and a large tail which may lash around their legs while they are nervous. Their canine teeth are sharply pointed and their eyes are solid colours - black, red, white, silver or gold" },
+                new Race { Name = "Half-Orc", Description = "With grayish pigmentation, sloping foreheads, jutting jaws with prominient teeth and towering builds (between 6-7 feet tall), the half-orc's orcish heritage is plain for all to see. They can be found united under the leadership of mighty warlocks or joined with larger hordes of humans or orc tribes.<p />Any half-orc that has lived near orcs bears scars, whether marks of humiliation or pride." },
+                new Race { Name = "Tiefling", Description = "Tieflings are met with stares and whispers and suffer violence, insult, mistrust and fear at the hands of other civilised folk. Formed of an ancient pact that infused them with the essence of Asmodeus - the overlord of the Nine Hells - their appearance and nature are the result of some ancient sin for which they will always be held accountable.<p />Tieflings have large horns that may be curling or straight, and a large tail which may lash around their legs while they are nervous. Their canine teeth are sharply pointed and their eyes are solid colours - black, red, white, silver or gold." },
             };
 
             context.Races.AddRange(races);
 
             var classes = new[]
             {
-                new Class { Name = "Barbarian", Description = "A fierce warrior of primitive background who can enter a battle rage" },
-                new Class { Name = "Bard", Description = "An inspiring magician whose power echoes the music of creation" },
-                new Class { Name = "Cleric", Description = "A priestly champion who wields divine magic in service of a higher power" },
-                new Class { Name = "Druid", Description = "A priest of the Old Faith, wielding the powers of nature – moonlight and plant growth, fire and lightning – and adopting animal forms" },
-                new Class { Name = "Fighter", Description = "A master of martial combat, skilled with a variety of weapons and armor" },
-                new Class { Name = "Monk", Description = "A master of martial arts, harnessing the power of the body in pursuit of physical and spiritual perfection" },
-                new Class { Name = "Paladin", Description = "A holy warrior bound to a sacred oath" },
-                new Class { Name = "Ranger", Description = "A warrior who uses martial prowess and nature magic to combat threats on the edges of civilization" },
-                new Class { Name = "Rogue", Description = "A scoundrel who uses stealth and trickery to overcome obstacles and enemies" },
-                new Class { Name = "Sorcerer", Description = "A spellcaster who draws on inherent magic from a gift or bloodline" },
-                new Class { Name = "Warlock", Description = "A wielder of magic that is derived from a bargain with an extraplanar entity" },
-                new Class { Name = "Wizard", Description = "A scholarly magic-user capable of manipulating the structures of reality" },
+                new Class { Name = "Barbarian", Description = "A fierce warrior of primitive background who can enter a battle rage." },
+                new Class { Name = "Bard", Description = "An inspiring magician whose power echoes the music of creation." },
+                new Class { Name = "Cleric", Description = "A priestly champion who wields divine magic in service of a higher power." },
+                new Class { Name = "Druid", Description = "A priest of the Old Faith, wielding the powers of nature – moonlight and plant growth, fire and lightning – and adopting animal forms." },
+                new Class { Name = "Fighter", Description = "A master of martial combat, skilled with a variety of weapons and armor." },
+                new Class { Name = "Monk", Description = "A master of martial arts, harnessing the power of the body in pursuit of physical and spiritual perfection." },
+                new Class { Name = "Paladin", Description = "A holy warrior bound to a sacred oath." },
+                new Class { Name = "Ranger", Description = "A warrior who uses martial prowess and nature magic to combat threats on the edges of civilization." },
+                new Class { Name = "Rogue", Description = "A scoundrel who uses stealth and trickery to overcome obstacles and enemies." },
+                new Class { Name = "Sorcerer", Description = "A spellcaster who draws on inherent magic from a gift or bloodline." },
+                new Class { Name = "Warlock", Description = "A wielder of magic that is derived from a bargain with an extraplanar entity." },
+                new Class { Name = "Wizard", Description = "A scholarly magic-user capable of manipulating the structures of reality." },
             };
 
             context.Classes.AddRange(classes);
@@ -52,7 +52,8 @@ namespace campaigns.Models
             var abilityWis = new Ability { SortOrder = 5, IsStandard = true, Name = "Wisdom", ShortName = "Wis", Description = "Awareness, intuition, insight" };
             var abilityCha = new Ability { SortOrder = 6, IsStandard = true, Name = "Charisma", ShortName = "Cha", Description = "Confidence, eloquence, leadership" };
 
-            context.Abilities.AddRange(new List<Ability> { abilityStr, abilityDex, abilityCon, abilityInt, abilityWis, abilityCha });
+            var abilities = new [] { abilityStr, abilityDex, abilityCon, abilityInt, abilityWis, abilityCha };
+            context.Abilities.AddRange(abilities);
 
             var skills = new[]
             {
@@ -77,6 +78,8 @@ namespace campaigns.Models
             };
 
             context.Skills.AddRange(skills);
+
+            context.Rules.Add(new Rules { Name = "Dungeons and Dragons 5th Edition", Races = races, Classes = classes, Abilities = abilities, Skills = skills });
 
             context.SaveChanges();
         }

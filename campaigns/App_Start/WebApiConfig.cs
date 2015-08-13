@@ -19,6 +19,12 @@ namespace campaigns
             config.MapHttpAttributeRoutes();
 
             config.Routes.MapHttpRoute(
+                name: "RulesApi",
+                routeTemplate: "api/rules/{controller}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
+
+            config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }

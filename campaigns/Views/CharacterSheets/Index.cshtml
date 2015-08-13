@@ -4,10 +4,12 @@
     ViewBag.Title = "Index";
 }
 
+@Html.Partial("_BeginCreateModal", new ViewDataDictionary { { "modalId", "creationModal" } })
+
 <h2>Index</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    <a href="#" data-toggle="modal" data-target="#creationModal">Create New</a>
 </p>
 @*TODO: implement paging http://www.asp.net/mvc/overview/getting-started/getting-started-with-ef-using-mvc/sorting-filtering-and-paging-with-the-entity-framework-in-an-asp-net-mvc-application*@
 <table class="table">
@@ -22,10 +24,10 @@
             @Html.DisplayNameFor(model => model.Experience)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Level)
+            @Html.DisplayNameFor(model => model.DerivedStatistics.Level)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ProficiencyBonus)
+            @Html.DisplayNameFor(model => model.DerivedStatistics.ProficiencyBonus)
         </th>
         <th></th>
     </tr>
@@ -42,10 +44,10 @@
             @Html.DisplayFor(modelItem => item.Experience)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Level)
+            @Html.DisplayFor(modelItem => item.DerivedStatistics.Level)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.ProficiencyBonus)
+            @Html.DisplayFor(modelItem => item.DerivedStatistics.ProficiencyBonus)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
@@ -56,3 +58,67 @@
 }
 
 </table>
+
+@section Scripts {
+<script>
+    var apiRules = {};
+
+    var rulesApiUri = '/api/rules';
+
+    function apiUriFor(e, id) {
+        var uri = rulesApiUri + '/' + e;
+        if (typeof id !== 'undefined') {
+            uri = uri + '/' + id;
+        }
+        return uri;
+    };
+
+    $.ajaxSetup({ cache: false });
+
+    $(document).ready(function () {
+        $.getJSON(apiUriFor('root'))
+            .done(function (data) {
+                apiRules = data;
+                configureModal();
+            })
+            .fail(function (jqXhr, textStatus, err) {
+                alert('error: ' + err);
+            });
+    });
+
+    function configureModal() {
+        function findEntityDescription(entities, id) {
+            for (var i = 0, len = entities.length; i < len; i++) {
+                if (entities[i]['id'] == id) {
+                    return entities[i]['description'];
+                }
+            }
+            return 'no description found';
+        }
+
+        // configure 'races' combo
+        var races = apiRules['races'];
+        var racesCombo = $('#modalRace');
+        var racesHelp = $('#modalRaceHelp');
+        racesCombo.change(function () {
+            racesHelp.html(findEntityDescription(races, this.value));
+        });
+        $.each(races, function (idx, e) {
+            racesCombo.append($('<option>', { value : e['id'], text : e['name'], dataHelpText : e['description'] }));
+        });
+        racesHelp.html(findEntityDescription(races, $('#modalRace option:selected').val()));
+
+        // configure 'classes' combo
+        var classes = apiRules['classes'];
+        var classesCombo = $('#modalClass');
+        var classesHelp = $('#modalClassHelp');
+        classesCombo.change(function () {
+            classesHelp.html(findEntityDescription(classes, this.value));
+        });
+        $.each(classes, function (idx, e) {
+            classesCombo.append($('<option>', { value: e['id'], text: e['name'] }));
+        });
+        classesHelp.html(findEntityDescription(classes, $('#modalClass option:selected').val()));
+    };
+</script>
+}

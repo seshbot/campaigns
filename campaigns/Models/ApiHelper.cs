@@ -10,11 +10,10 @@ namespace campaigns.Models
     {
         private static AbilityAllocation FindOrCreateAbilityAllocation(CharacterSheet cs, int abilityId, CharacterSheetDbContext db)
         {
-            var allocation = cs.Abilities?.FirstOrDefault(a => a.Ability.Id == abilityId);
+            var allocation = cs.AbilityAllocations?.FirstOrDefault(a => a.Ability.Id == abilityId);
             if (null == allocation)
             {
                 allocation = new AbilityAllocation { Ability = db.Abilities.Find(abilityId) };
-                //cs.Abilities.Add(allocation);
             }
             return allocation;
         }
@@ -40,29 +39,35 @@ namespace campaigns.Models
         {
             characterSheet.Name = apiData.Name;
             characterSheet.Description = apiData.Description;
-            characterSheet.Experience = apiData.Experience.GetValueOrDefault(0);
+
+            var experience = apiData.Experience.GetValueOrDefault(0);
+            var level = apiData.Level.GetValueOrDefault(0);
+
+            // TODO: this shouldnt reference the rules directly
+            var levelInfo = LevelInfo.FindBestFit(experience, level);
+            characterSheet.Experience = levelInfo.XP;
 
             // copy existing allocations, overwriting with DTO
-            if (null != apiData.Abilities)
+            if (null != apiData.AbilityAllocations)
             {
                 var abilityAllocations =
-                    (from allocationDto in apiData.Abilities
-                     let allocation = characterSheet.Abilities?.FirstOrDefault(a => a.Ability.Id == allocationDto.AbilityId)
+                    (from allocationDto in apiData.AbilityAllocations
+                     let allocation = characterSheet.AbilityAllocations?.FirstOrDefault(a => a.Ability.Id == allocationDto.AbilityId)
                      select db.CloneAndUpdate(allocation, allocationDto)
                      ).ToList();
 
-                characterSheet.Abilities = abilityAllocations;
+                characterSheet.AbilityAllocations = abilityAllocations;
             }
 
-            if (null != apiData.Skills)
+            if (null != apiData.SkillAllocations)
             {
                 var skillAllocations =
-                    (from allocationDto in apiData.Skills
-                     let allocation = characterSheet.Skills?.FirstOrDefault(a => a.Skill.Id == allocationDto.SkillId)
+                    (from allocationDto in apiData.SkillAllocations
+                     let allocation = characterSheet.SkillAllocations?.FirstOrDefault(a => a.Skill.Id == allocationDto.SkillId)
                      select db.CloneAndUpdate(allocation, allocationDto)
                      ).ToList();
 
-                characterSheet.Skills = skillAllocations;
+                characterSheet.SkillAllocations = skillAllocations;
             }
 
             if (apiData.RaceId.HasValue)

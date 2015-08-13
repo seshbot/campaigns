@@ -25,7 +25,7 @@ namespace campaigns.Helpers
                 .Select(s => new { Entity = s }).AsEnumerable()
                 .Select(s => new SkillAllocation { Skill = s.Entity, Points = 0 }).ToList();
 
-            return new CharacterSheet { Abilities = abilityAllocations, Skills = skillAllocations };
+            return new CharacterSheet { AbilityAllocations = abilityAllocations, SkillAllocations = skillAllocations };
         }
     }
 }

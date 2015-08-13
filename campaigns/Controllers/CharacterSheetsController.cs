@@ -34,19 +34,26 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
-            return View(characterSheet);
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
         }
 
         // GET: CharacterSheets/Create
-        public ActionResult Create()
+        public ActionResult Create([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
         {
-            return View(db.CreateEmptyCharacterSheet());
+            var newCharacterSheet = db.CreateEmptyCharacterSheet();
+            if (null != characterSheet)
+            {
+                newCharacterSheet = ApiHelper.UpdateFromApiData(db, newCharacterSheet, characterSheet);
+            }
+
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
         }
 
         // POST: CharacterSheets/Create
         [HttpPost]
+        [ActionName("Create")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
+        public ActionResult CreateConfirm([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
         {
             var newCharacterSheet = ApiHelper.CreateFromApiData(db, characterSheet);
             try
@@ -63,7 +70,7 @@ namespace campaigns.Controllers
                 ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
             }
             
-            return View(newCharacterSheet);
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
         }
 
         // GET: CharacterSheets/Edit/5
@@ -78,7 +85,7 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
-            return View(characterSheet);
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
         }
 
         // POST: CharacterSheets/Edit/5
@@ -109,7 +116,7 @@ namespace campaigns.Controllers
                 ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
             }
 
-            return View(newCharacterSheet);
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
         }
 
         // GET: CharacterSheets/Delete/5
@@ -128,7 +135,7 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
-            return View(characterSheet);
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
         }
 
         // POST: CharacterSheets/Delete/5

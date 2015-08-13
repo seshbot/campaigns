@@ -41,41 +41,41 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Level, Html.CustomLabelAttributes())
+            @Html.LabelFor(model => model.DerivedStatistics.Level, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Level, Html.CustomEditorAttributes())
-                @Html.ValidationMessageFor(model => model.Level, "", Html.CustomValidationAttributes())
+                @Html.EditorFor(model => model.DerivedStatistics.Level, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.DerivedStatistics.Level, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ProficiencyBonus, Html.CustomLabelAttributes())
+            @Html.LabelFor(model => model.DerivedStatistics.ProficiencyBonus, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ProficiencyBonus, Html.CustomEditorAttributes())
-                @Html.ValidationMessageFor(model => model.ProficiencyBonus, "", Html.CustomValidationAttributes())
+                @Html.EditorFor(model => model.DerivedStatistics.ProficiencyBonus, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.DerivedStatistics.ProficiencyBonus, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
-        @for (var i = 0; i < Model.Abilities.Count(); i++)
+        @for (var i = 0; i < Model.AbilityAllocations.Count(); i++)
         {
             <div class="form-group">
-                @Html.LabelFor(m => m.Abilities[i].Points, Model.Abilities[i].Ability.ShortName, Html.CustomLabelAttributes())
+                @Html.LabelFor(m => m.AbilityAllocations[i].Points, Model.AbilityAllocations[i].Ability.ShortName, Html.CustomLabelAttributes())
                 <div class="col-md-10">
-                    @Html.Hidden("Abilities[" + i + "].AbilityId", Model.Abilities[i].Ability.Id)
-                    @Html.EditorFor(m => m.Abilities[i].Points, Html.CustomEditorAttributes())
-                    @Html.ValidationMessageFor(m => m.Abilities[i].Points, "", Html.CustomValidationAttributes())
+                    @Html.Hidden("AbilityAllocations[" + i + "].AbilityId", Model.AbilityAllocations[i].Ability.Id)
+                    @Html.EditorFor(m => m.AbilityAllocations[i].Points, Html.CustomEditorAttributes())
+                    @Html.ValidationMessageFor(m => m.AbilityAllocations[i].Points, "", Html.CustomValidationAttributes())
                 </div>
             </div>
         }
 
-        @for (var i = 0; i < Model.Skills.Count(); i++)
+        @for (var i = 0; i < Model.SkillAllocations.Count(); i++)
         {
             <div class="form-group">
-                @Html.LabelFor(m => m.Skills[i].Points, Model.Skills[i].Skill.Name, Html.CustomLabelAttributes())
+                @Html.LabelFor(m => m.SkillAllocations[i].Points, Model.SkillAllocations[i].Skill.Name, Html.CustomLabelAttributes())
                 <div class="col-md-10">
-                    @Html.Hidden("Skills[" + i + "].SkillId", Model.Skills[i].Skill.Id)
-                    @Html.EditorFor(m => m.Skills[i].Points, Html.CustomEditorAttributes())
-                    @Html.ValidationMessageFor(m => m.Skills[i].Points, "", Html.CustomValidationAttributes())
+                    @Html.Hidden("SkillAllocations[" + i + "].SkillId", Model.SkillAllocations[i].Skill.Id)
+                    @Html.EditorFor(m => m.SkillAllocations[i].Points, Html.CustomEditorAttributes())
+                    @Html.ValidationMessageFor(m => m.SkillAllocations[i].Points, "", Html.CustomValidationAttributes())
                 </div>
             </div>
         }
@@ -93,12 +93,6 @@
 </div>
 
 @section Scripts {
-    <script>
-        // this is a comment
-        $(document).ready(function () {
-            x = 1;
-        });
-    </script>
     @Scripts.Render("~/bundles/jqueryval")
     @Scripts.Render("~/Scripts/angular.js")
     @Scripts.Render("~/Scripts/app/character-creation-controller.js")
