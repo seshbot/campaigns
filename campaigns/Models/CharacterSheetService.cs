@@ -1,25 +1,32 @@
-﻿using campaigns.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Helpers
+namespace campaigns.Models
 {
-    public static class CharacterSheetHelpers
+    public class CharacterSheetService : ICharacterSheetService
     {
-        static public CharacterSheet CreateEmptyCharacterSheet(this CharacterSheetDbContext db)
+        CharacterSheetDbContext _db;
+
+        public CharacterSheetService(CharacterSheetDbContext db)
+        {
+            _db = db;
+        }
+
+        public CharacterSheet CreateCharacterSheet()
         {
             // need to jump through some hoops because LINQ-to-entities cannot construct our types directly
-            var abilityAllocations = 
-                db.Abilities
+            var abilityAllocations =
+                _db.Abilities
                 .Where(a => a.IsStandard)
                 .OrderBy(a => a.SortOrder)
                 .Select(a => new { Entity = a }).AsEnumerable()
                 .Select(a => new AbilityAllocation { Ability = a.Entity, Points = 8 }).ToList();
-            var skillAllocations = 
-                db.Skills
+
+            var skillAllocations =
+                _db.Skills
                 .Where(s => s.IsStandard)
                 .OrderBy(s => s.Name)
                 .Select(s => new { Entity = s }).AsEnumerable()
@@ -27,5 +34,10 @@ namespace campaigns.Helpers
 
             return new CharacterSheet { AbilityAllocations = abilityAllocations, SkillAllocations = skillAllocations };
         }
+    }
+
+    public interface ICharacterSheetService
+    {
+        CharacterSheet CreateCharacterSheet();
     }
 }

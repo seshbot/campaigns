@@ -139,7 +139,14 @@ namespace campaigns.Models
         public string Name { get; set; }
         [DataType(DataType.Html), AllowSafeHtml]
         public string Description { get; set; }
+        public string ShortDescription {
+            get {
+                return (Description ?? "").Split(new[] { '.', '\n', '<' }).FirstOrDefault();
+            }
+        }
+        public int RaceId { get; set; }
         public virtual Race Race { get; set; }
+        public int ClassId { get; set; }
         public virtual Class Class { get; set; }
 
         // statistics

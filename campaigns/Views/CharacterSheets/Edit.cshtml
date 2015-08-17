@@ -63,7 +63,7 @@
             <div class="form-group">
                 @Html.LabelFor(m => m.AbilityAllocations[i].Points, Model.AbilityAllocations[i].Ability.ShortName, Html.CustomLabelAttributes())
                 <div class="col-md-10">
-                    @Html.Hidden("Abilities[" + i + "].AbilityId", Model.AbilityAllocations[i].Ability.Id)
+                    @Html.Hidden("AbilityAllocations[" + i + "].AbilityId", Model.AbilityAllocations[i].Ability.Id)
                     @Html.EditorFor(m => m.AbilityAllocations[i].Points, Html.CustomEditorAttributes())
                     @Html.ValidationMessageFor(m => m.AbilityAllocations[i].Points, "", Html.CustomValidationAttributes())
                 </div>
@@ -75,7 +75,7 @@
             <div class="form-group">
                 @Html.LabelFor(m => m.SkillAllocations[i].Points, Model.SkillAllocations[i].Skill.Name, Html.CustomLabelAttributes())
                 <div class="col-md-10">
-                    @Html.Hidden("Skills[" + i + "].SkillId", Model.SkillAllocations[i].Skill.Id)
+                    @Html.Hidden("SkillAllocations[" + i + "].SkillId", Model.SkillAllocations[i].Skill.Id)
                     @Html.EditorFor(m => m.SkillAllocations[i].Points, Html.CustomEditorAttributes())
                     @Html.ValidationMessageFor(m => m.SkillAllocations[i].Points, "", Html.CustomValidationAttributes())
                 </div>

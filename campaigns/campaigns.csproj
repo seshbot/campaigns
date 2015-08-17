@@ -201,7 +201,6 @@
     <Compile Include="Controllers\CharacterSheetsController.cs" />
     <Compile Include="Controllers\Api\Rules\RulesControllers.cs" />
     <Compile Include="GlimpseSecurityPolicy.cs" />
-    <Compile Include="Helpers\CharacterSheetHelpers.cs" />
     <Compile Include="Helpers\DataHelpers.cs" />
     <Compile Include="Helpers\HtmlHelpers.cs" />
     <Compile Include="Models\ApiHelper.cs" />
@@ -215,6 +214,7 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CharacterSheetCalculator.cs" />
     <Compile Include="Models\CharacterSheetInitializer.cs" />
+    <Compile Include="Models\CharacterSheetService.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -230,7 +230,8 @@
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\angular.js" />
     <Content Include="Scripts\angular.min.js" />
-    <Content Include="Scripts\app\character-creation-controller.js" />
+    <Content Include="Scripts\app\app.js" />
+    <Content Include="Scripts\app\app.rules.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Properties\PublishProfiles\seshbot-campaigns.pubxml" />

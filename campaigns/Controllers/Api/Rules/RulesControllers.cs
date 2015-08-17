@@ -12,6 +12,9 @@ using campaigns.Models;
 
 namespace campaigns.Controllers.Api.Rules
 {
+    // http://pluralsight.com/training/Player?author=scott-allen&name=aspdotnet-mvc5-fundamentals-m5-webapi2&mode=live&clip=0&course=aspdotnet-mvc5-fundamentals
+    // TODO: JSON data should be prepended with ")]}',#chr( 10 )#" 
+    // to prevent malicious attacks
     public class RootController : ApiController
     {
         private CharacterSheetDbContext db = new CharacterSheetDbContext();
@@ -23,72 +26,6 @@ namespace campaigns.Controllers.Api.Rules
             return Ok(db.Rules.First());
         }
         
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-    }
-
-    public class RacesController : ApiController
-    {
-        private CharacterSheetDbContext db = new CharacterSheetDbContext();
-
-        // GET: api/rules/Races
-        public IQueryable<Race> GetAll()
-        {
-            return db.Races;
-        }
-
-        // GET: api/rules/Races/5
-        [ResponseType(typeof(Race))]
-        public IHttpActionResult GetSingle(int id)
-        {
-            var race = db.Races.Find(id);
-            if (race == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(race);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-    }
-
-    public class ClassesController : ApiController
-    {
-        private CharacterSheetDbContext db = new CharacterSheetDbContext();
-
-        // GET: api/rules/Classes
-        public IQueryable<Class> GetAll()
-        {
-            return db.Classes;
-        }
-
-        // GET: api/rules/Classes/5
-        [ResponseType(typeof(Class))]
-        public IHttpActionResult GetSingle(int id)
-        {
-            var Class = db.Classes.Find(id);
-            if (Class == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(Class);
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -14,12 +14,26 @@ namespace campaigns.Controllers
 {
     public class CharacterSheetsController : Controller
     {
-        private CharacterSheetDbContext db = new CharacterSheetDbContext();
+        private CharacterSheetDbContext _db = new CharacterSheetDbContext();
+        private ICharacterSheetService _service;
+
+        public CharacterSheetsController()
+        {
+            _service = new CharacterSheetService(_db);
+        }
+        public CharacterSheetsController(ICharacterSheetService service)
+        {
+            _service = service;
+        }
 
         // GET: CharacterSheets
         public ActionResult Index()
         {
-            return View(db.CharacterSheets.ToList());
+            var characterSheetsWithDerivedInfo =
+               (from sheet in _db.CharacterSheets.ToList()
+                select CharacterSheetCalculator.AddDerivedStatisticsTo(sheet)).ToList();
+
+            return View(characterSheetsWithDerivedInfo);
         }
 
         // GET: CharacterSheets/Details/5
@@ -29,7 +43,7 @@ namespace campaigns.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            CharacterSheet characterSheet = db.CharacterSheets.Find(id);
+            CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
             if (characterSheet == null)
             {
                 return HttpNotFound();
@@ -40,10 +54,10 @@ namespace campaigns.Controllers
         // GET: CharacterSheets/Create
         public ActionResult Create([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
         {
-            var newCharacterSheet = db.CreateEmptyCharacterSheet();
+            var newCharacterSheet = _service.CreateCharacterSheet();
             if (null != characterSheet)
             {
-                newCharacterSheet = ApiHelper.UpdateFromApiData(db, newCharacterSheet, characterSheet);
+                newCharacterSheet = ApiHelper.UpdateFromApiData(_db, newCharacterSheet, characterSheet);
             }
 
             return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
@@ -55,13 +69,13 @@ namespace campaigns.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateConfirm([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
         {
-            var newCharacterSheet = ApiHelper.CreateFromApiData(db, characterSheet);
+            var newCharacterSheet = ApiHelper.CreateFromApiData(_db, characterSheet);
             try
             {
                 if (ModelState.IsValid)
                 {
-                    db.CharacterSheets.Add(newCharacterSheet);
-                    db.SaveChanges();
+                    _db.CharacterSheets.Add(newCharacterSheet);
+                    _db.SaveChanges();
                     return RedirectToAction("Details", new { Id = newCharacterSheet.Id });
                 }
             }
@@ -80,7 +94,7 @@ namespace campaigns.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            CharacterSheet characterSheet = db.CharacterSheets.Find(id);
+            CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
             if (characterSheet == null)
             {
                 return HttpNotFound();
@@ -101,13 +115,13 @@ namespace campaigns.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             
-            var newCharacterSheet = db.CharacterSheets.Find(characterSheet.Id);
-            db.Entry(newCharacterSheet).State = EntityState.Detached;
+            var newCharacterSheet = _db.CharacterSheets.Find(characterSheet.Id);
+            _db.Entry(newCharacterSheet).State = EntityState.Detached;
             try
             {
-                var updatedCharacterSheet = ApiHelper.UpdateFromApiData(db, newCharacterSheet, characterSheet);
-                db.CharacterSheets.Add(updatedCharacterSheet);
-                db.SaveChanges();
+                var updatedCharacterSheet = ApiHelper.UpdateFromApiData(_db, newCharacterSheet, characterSheet);
+                _db.CharacterSheets.Add(updatedCharacterSheet);
+                _db.SaveChanges();
 
                 return RedirectToAction("Details", new { Id = updatedCharacterSheet.Id });
             }
@@ -130,7 +144,7 @@ namespace campaigns.Controllers
             {
                 ViewBag.ErrorMessage = "Delete failed - an error occurred while trying to save changes";
             }
-            CharacterSheet characterSheet = db.CharacterSheets.Find(id);
+            CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
             if (characterSheet == null)
             {
                 return HttpNotFound();
@@ -145,9 +159,13 @@ namespace campaigns.Controllers
         {
             try
             {
-                CharacterSheet characterSheet = db.CharacterSheets.Find(id);
-                db.CharacterSheets.Remove(characterSheet);
-                db.SaveChanges();
+                CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
+                foreach (var o in characterSheet.AbilityAllocations.ToList())
+                    _db.Entry(o).State = EntityState.Deleted;
+                foreach (var o in characterSheet.SkillAllocations.ToList())
+                    _db.Entry(o).State = EntityState.Deleted;
+                _db.CharacterSheets.Remove(characterSheet);
+                _db.SaveChanges();
             }
             catch (DataException)
             {
@@ -161,7 +179,7 @@ namespace campaigns.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
         }
