@@ -8,6 +8,52 @@ using System.Threading.Tasks;
 namespace campaigns.Models
 {
 
+    public class RulesDbContext : DbContext
+    {
+        public DbSet<Model.Calculations.Attribute> Attributes { get; set; }
+        public DbSet<Model.Calculations.AttributeContribution> AttributeContributions{ get; set; }
+    }
+
+    public class RulesInitializer : DropCreateDatabaseIfModelChanges<RulesDbContext>
+    {
+        protected override void Seed(RulesDbContext context)
+        {
+            //
+            // attributes
+            //
+
+            var races = new Dictionary<string, Model.Calculations.Attribute>
+            {
+                { "dwarf", new Model.Calculations.Attribute { Category = "race", Name = "dwarf" } },
+            };
+
+            context.Attributes.AddRange(races.Values);
+
+            var abilities = new Dictionary<string, Model.Calculations.Attribute>
+            {
+                { "str", new Model.Calculations.Attribute { Category = "ability", Name = "str" } },
+                { "dex", new Model.Calculations.Attribute { Category = "ability", Name = "dex" } },
+                { "con", new Model.Calculations.Attribute { Category = "ability", Name = "con" } },
+                { "int", new Model.Calculations.Attribute { Category = "ability", Name = "int" } },
+                { "wis", new Model.Calculations.Attribute { Category = "ability", Name = "wis" } },
+                { "cha", new Model.Calculations.Attribute { Category = "ability", Name = "cha" } },
+            };
+
+            context.Attributes.AddRange(abilities.Values);
+
+            //
+            // calculation contributions
+            //
+
+            var contributions = new[]
+            {
+                new Model.Calculations.AttributeContribution { Source = races["dwarf"], Target = abilities["con"], Formula = Model.Calculations.AttributeContributions.Value(2) },
+            };
+
+            context.SaveChanges();
+        }
+    }
+
     public class CharacterSheetInitializer : DropCreateDatabaseIfModelChanges<CharacterSheetDbContext>
     {
         protected override void Seed(CharacterSheetDbContext context)
