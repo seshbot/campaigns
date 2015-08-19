@@ -9,17 +9,20 @@ using System.Web.Mvc;
 using campaigns.Models;
 using campaigns.Helpers;
 using campaigns.Models.Api;
+using Model.Calculations;
 
 namespace campaigns.Controllers
 {
     public class CharacterSheetsController : Controller
     {
-        private CharacterSheetDbContext _db = new CharacterSheetDbContext();
+        private CharacterSheetDbContext _charDb = new CharacterSheetDbContext();
+        private RulesDbContext _rulesDb = new RulesDbContext();
         private ICharacterSheetService _service;
+        private ICalculationService _calcService = new CalculationService();
 
         public CharacterSheetsController()
         {
-            _service = new CharacterSheetService(_db);
+            _service = new CharacterSheetService(_charDb);
         }
         public CharacterSheetsController(ICharacterSheetService service)
         {
@@ -30,7 +33,7 @@ namespace campaigns.Controllers
         public ActionResult Index()
         {
             var characterSheetsWithDerivedInfo =
-               (from sheet in _db.CharacterSheets.ToList()
+               (from sheet in _charDb.CharacterSheets.ToList()
                 select CharacterSheetCalculator.AddDerivedStatisticsTo(sheet)).ToList();
 
             return View(characterSheetsWithDerivedInfo);
@@ -43,7 +46,7 @@ namespace campaigns.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
+            CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
             if (characterSheet == null)
             {
                 return HttpNotFound();
@@ -57,8 +60,17 @@ namespace campaigns.Controllers
             var newCharacterSheet = _service.CreateCharacterSheet();
             if (null != characterSheet)
             {
-                newCharacterSheet = ApiHelper.UpdateFromApiData(_db, newCharacterSheet, characterSheet);
+                newCharacterSheet = ApiHelper.UpdateFromApiData(_charDb, newCharacterSheet, characterSheet);
             }
+
+            var calculationContext = new RulesCalculationContext(_rulesDb);
+            calculationContext.InitialValues = (
+                from alloc in newCharacterSheet.AbilityAllocations
+                let attribute = _rulesDb.Attrib(alloc.Ability.ShortName, "ability")
+                select new AttributeValue { Attribute = attribute, Value = alloc.Points }
+                ).ToList();
+
+            var calculatedResults = _calcService.Calculate(calculationContext);
 
             return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
         }
@@ -69,13 +81,13 @@ namespace campaigns.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateConfirm([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
         {
-            var newCharacterSheet = ApiHelper.CreateFromApiData(_db, characterSheet);
+            var newCharacterSheet = ApiHelper.CreateFromApiData(_charDb, characterSheet);
             try
             {
                 if (ModelState.IsValid)
                 {
-                    _db.CharacterSheets.Add(newCharacterSheet);
-                    _db.SaveChanges();
+                    _charDb.CharacterSheets.Add(newCharacterSheet);
+                    _charDb.SaveChanges();
                     return RedirectToAction("Details", new { Id = newCharacterSheet.Id });
                 }
             }
@@ -94,7 +106,7 @@ namespace campaigns.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
+            CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
             if (characterSheet == null)
             {
                 return HttpNotFound();
@@ -115,13 +127,13 @@ namespace campaigns.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             
-            var newCharacterSheet = _db.CharacterSheets.Find(characterSheet.Id);
-            _db.Entry(newCharacterSheet).State = EntityState.Detached;
+            var newCharacterSheet = _charDb.CharacterSheets.Find(characterSheet.Id);
+            _charDb.Entry(newCharacterSheet).State = EntityState.Detached;
             try
             {
-                var updatedCharacterSheet = ApiHelper.UpdateFromApiData(_db, newCharacterSheet, characterSheet);
-                _db.CharacterSheets.Add(updatedCharacterSheet);
-                _db.SaveChanges();
+                var updatedCharacterSheet = ApiHelper.UpdateFromApiData(_charDb, newCharacterSheet, characterSheet);
+                _charDb.CharacterSheets.Add(updatedCharacterSheet);
+                _charDb.SaveChanges();
 
                 return RedirectToAction("Details", new { Id = updatedCharacterSheet.Id });
             }
@@ -144,7 +156,7 @@ namespace campaigns.Controllers
             {
                 ViewBag.ErrorMessage = "Delete failed - an error occurred while trying to save changes";
             }
-            CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
+            CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
             if (characterSheet == null)
             {
                 return HttpNotFound();
@@ -159,13 +171,13 @@ namespace campaigns.Controllers
         {
             try
             {
-                CharacterSheet characterSheet = _db.CharacterSheets.Find(id);
+                CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
                 foreach (var o in characterSheet.AbilityAllocations.ToList())
-                    _db.Entry(o).State = EntityState.Deleted;
+                    _charDb.Entry(o).State = EntityState.Deleted;
                 foreach (var o in characterSheet.SkillAllocations.ToList())
-                    _db.Entry(o).State = EntityState.Deleted;
-                _db.CharacterSheets.Remove(characterSheet);
-                _db.SaveChanges();
+                    _charDb.Entry(o).State = EntityState.Deleted;
+                _charDb.CharacterSheets.Remove(characterSheet);
+                _charDb.SaveChanges();
             }
             catch (DataException)
             {
@@ -179,7 +191,7 @@ namespace campaigns.Controllers
         {
             if (disposing)
             {
-                _db.Dispose();
+                _charDb.Dispose();
             }
             base.Dispose(disposing);
         }

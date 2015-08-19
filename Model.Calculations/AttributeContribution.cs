@@ -18,11 +18,9 @@ namespace Model.Calculations
 
     public class AttributeContribution
     {
-        [ForeignKey("Source")]
         [Required]
         public virtual Attribute Source { get; set; }
 
-        [ForeignKey("Target")]
         [Required]
         public virtual Attribute Target { get; set; }
 

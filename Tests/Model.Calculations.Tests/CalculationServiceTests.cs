@@ -12,11 +12,6 @@ namespace Model.Calculations.Tests
         TestContext context;
         CalculationService service;
 
-        Attribute Attrib(string name, string category)
-        {
-            return context.GetAttribute(name, category);
-        }
-
         [TestInitialize]
         public void TestInit()
         {
@@ -27,24 +22,24 @@ namespace Model.Calculations.Tests
         [TestMethod]
         public void TestContributionsCascade()
         {
-            context.SetInitialValue(Attrib("str", "ability"), 8);
-            context.SetInitialValue(Attrib("int", "ability"), 8);
+            context.SetInitialValue(context.Ability("str"), 8);
+            context.SetInitialValue(context.Ability("int"), 8);
 
             var result = service.Calculate(context);
 
-            result.AssertAttribValue(Attrib("gnome", "race"), 0);
+            result.AssertAttribValue(context.Race("gnome"), 0);
 
-            result.AssertAttribValue(Attrib("str", "ability"), 8);
-            result.AssertAttribValue(Attrib("int", "ability"), 10);
+            result.AssertAttribValue(context.Ability("str"), 8);
+            result.AssertAttribValue(context.Ability("int"), 10);
 
-            result.AssertAttribValue(Attrib("str", "ability-modifier"), -1);
-            result.AssertAttribValue(Attrib("int", "ability-modifier"), 0);
+            result.AssertAttribValue(context.AbilityMod("str"), -1);
+            result.AssertAttribValue(context.AbilityMod("int"), 0);
 
-            result.AssertAttribValue(Attrib("athletics", "skill"), -1);
-            result.AssertAttribValue(Attrib("arcana", "skill"), 0);
+            result.AssertAttribValue(context.Skill("athletics"), -1);
+            result.AssertAttribValue(context.Skill("arcana"), 0);
 
-            result.AssertAttribContributionFrom(Attrib("int", "ability"), Attrib("gnome", "race"));
-            result.AssertAttribContributionFrom(Attrib("arcana", "skill"), Attrib("int", "ability-modifier"));
+            result.AssertAttribContributionFrom(context.Ability("int"), context.Race("gnome"));
+            result.AssertAttribContributionFrom(context.Skill("arcana"), context.AbilityMod("int"));
         }
     }
 

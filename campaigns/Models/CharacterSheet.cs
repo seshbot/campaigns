@@ -71,10 +71,10 @@ namespace campaigns.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public virtual IList<Race> Races { get; set; }
-        public virtual IList<Class> Classes { get; set; }
-        public virtual IList<Ability> Abilities { get; set; }
-        public virtual IList<Skill> Skills { get; set; }
+        public virtual ICollection<Race> Races { get; set; }
+        public virtual ICollection<Class> Classes { get; set; }
+        public virtual ICollection<Ability> Abilities { get; set; }
+        public virtual ICollection<Skill> Skills { get; set; }
     }
 
     //// ComplexType
@@ -109,14 +109,14 @@ namespace campaigns.Models
     public class SkillValueCalculation
     {
         public SkillAllocation Allocation { get; set; }
-        public IList<Contribution> Contributions { get; set; }
+        public ICollection<Contribution> Contributions { get; set; }
         public int Value;
     }
 
     public class AbilityValueCalculation
     {
         public AbilityAllocation Allocation { get; set; }
-        public IList<Contribution> Contributions { get; set; }
+        public ICollection<Contribution> Contributions { get; set; }
         public int Value { get; set; }
         public int Modifier { get; set; }
     }
@@ -155,15 +155,5 @@ namespace campaigns.Models
         public virtual IList<SkillAllocation> SkillAllocations { get; set; }
 
         public CharacterDerivedStatistics DerivedStatistics { get; set; }
-    }
-
-    public class CharacterSheetDbContext : DbContext
-    {
-        public DbSet<CharacterSheet> CharacterSheets { get; set; }
-        public DbSet<Ability> Abilities { get; set; }
-        public DbSet<Skill> Skills { get; set; }
-        public DbSet<Race> Races { get; set; }
-        public DbSet<Class> Classes { get; set; }
-        public DbSet<Rules> Rules { get; set; }
     }
 }
