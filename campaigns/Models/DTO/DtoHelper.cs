@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace campaigns.Models.DTO
 {
+#if false
     public static class DtoHelper
     {
         private static AbilityAllocation CloneAndUpdate(this CharacterSheetDbContext db, AbilityAllocation a, DTO.AbilityAllocationDTO apiData)
@@ -76,4 +77,5 @@ namespace campaigns.Models.DTO
             return characterSheet;
         }
     }
+#endif
 }

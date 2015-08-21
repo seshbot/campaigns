@@ -17,14 +17,13 @@ namespace campaigns.Controllers
     public class CharacterSheetsController : Controller
     {
         private CharacterSheetDbContext _charDb = new CharacterSheetDbContext();
-        private RulesDbContext _rulesDb = new RulesDbContext();
         private ICharacterSheetService _service;
-        private ICalculationService _calcService = new CalculationService();
 
         public CharacterSheetsController()
         {
             _service = new CharacterSheetService(_charDb);
         }
+
         public CharacterSheetsController(ICharacterSheetService service)
         {
             _service = service;
@@ -35,7 +34,7 @@ namespace campaigns.Controllers
         {
             var characterSheetsWithDerivedInfo =
                (from sheet in _charDb.CharacterSheets.ToList()
-                select CharacterSheetCalculator.AddDerivedStatisticsTo(sheet)).ToList();
+                select _service.AddCalculatedStatisticsTo(sheet)).ToList();
 
             return View(characterSheetsWithDerivedInfo);
         }
@@ -52,23 +51,7 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
-        }
-
-        private void EnsureValid(CharacterSheet characterSheet)
-        {
-            characterSheet.Description = characterSheet.Description ?? new CharacterDescription
-            {
-                Name = "",
-                Text = ""
-            };
-
-            // TODO: this shouldnt reference the rules directly
-            var levelInfo = LevelInfo.FindBestFit(characterSheet.Experience, characterSheet.Level);
-            characterSheet.Experience = levelInfo.XP;
-            characterSheet.Level = levelInfo.Level;
-
-            _service.AddStandardAttributesTo(characterSheet);
+            return View(_service.AddCalculatedStatisticsTo(characterSheet));
         }
 
         // GET: CharacterSheets/Create
@@ -80,15 +63,11 @@ namespace campaigns.Controllers
             }
             else
             {
-                EnsureValid(characterSheet);
+                _service.EnsureValid(characterSheet);
             }
 
             //newCharacterSheet = DtoHelper.UpdateFromDTO(_charDb, newCharacterSheet, characterSheetInfo);
-            var calculationContext = new RulesCalculationContext(_rulesDb, characterSheet);
-
-            var calculatedResults = _calcService.Calculate(calculationContext);
-
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
+            return View(_service.AddCalculatedStatisticsTo(characterSheet));
         }
 
         // POST: CharacterSheets/Create
@@ -102,7 +81,7 @@ namespace campaigns.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    EnsureValid(characterSheet);
+                    _service.EnsureValid(characterSheet);
                     _charDb.CharacterSheets.Add(characterSheet);
                     _charDb.SaveChanges();
                     return RedirectToAction("Details", new { Id = characterSheet.Id });
@@ -113,7 +92,7 @@ namespace campaigns.Controllers
                 ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
             }
             
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
+            return View(_service.AddCalculatedStatisticsTo(characterSheet));
         }
 
         // GET: CharacterSheets/Edit/5
@@ -128,7 +107,7 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
+            return View(_service.AddCalculatedStatisticsTo(characterSheet));
         }
 
         // POST: CharacterSheets/Edit/5
@@ -148,7 +127,7 @@ namespace campaigns.Controllers
             _charDb.Entry(characterSheetToUpdate).State = EntityState.Detached;
             if (TryUpdateModel(characterSheetToUpdate))
             {
-                EnsureValid(characterSheetToUpdate);
+                _service.EnsureValid(characterSheetToUpdate);
                 try
                 {
                     // create new entry, dont update existing entry
@@ -161,7 +140,7 @@ namespace campaigns.Controllers
                     ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
                 }
             }
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheetToUpdate));
+            return View(_service.AddCalculatedStatisticsTo(characterSheetToUpdate));
         }
 
         // GET: CharacterSheets/Delete/5
@@ -180,7 +159,7 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
+            return View(_service.AddCalculatedStatisticsTo(characterSheet));
         }
 
         // POST: CharacterSheets/Delete/5
