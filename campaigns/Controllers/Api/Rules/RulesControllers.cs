@@ -15,15 +15,17 @@ namespace campaigns.Controllers.Api.Rules
     // http://pluralsight.com/training/Player?author=scott-allen&name=aspdotnet-mvc5-fundamentals-m5-webapi2&mode=live&clip=0&course=aspdotnet-mvc5-fundamentals
     // TODO: JSON data should be prepended with ")]}',#chr( 10 )#" 
     // to prevent malicious attacks
-    public class RootController : ApiController
+    [RoutePrefix("api/rules")]
+    public class RulesController : ApiController
     {
         private CharacterSheetDbContext db = new CharacterSheetDbContext();
 
         // GET: api/rules/Root
-        [ResponseType(typeof(Models.Rules))]
+        [ResponseType(typeof(Models.DAL.RuleSet))]
+        [Route("")]
         public IHttpActionResult Get()
         {
-            return Ok(db.Rules.First());
+            return Ok(db.RuleSets.First());
         }
         
         protected override void Dispose(bool disposing)

@@ -3,7 +3,7 @@
     'use strict';
 
     angular.module('app.rules', []);
-    angular.module('app.rules').value('apiUrl', '/api/rules/root');
+    angular.module('app.rules').value('apiUrl', '/api/rules');
     angular.module('app.rules').factory('rules', RulesFactory);
 
     RulesFactory.$inject = ['apiUrl', '$http', '$q'];

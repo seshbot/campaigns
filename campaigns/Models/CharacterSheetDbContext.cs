@@ -1,4 +1,5 @@
-﻿using System;
+﻿using campaigns.Models.DAL;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -14,6 +15,6 @@ namespace campaigns.Models
         public DbSet<Skill> Skills { get; set; }
         public DbSet<Race> Races { get; set; }
         public DbSet<Class> Classes { get; set; }
-        public DbSet<Rules> Rules { get; set; }
+        public DbSet<RuleSet> RuleSets { get; set; }
     }
 }

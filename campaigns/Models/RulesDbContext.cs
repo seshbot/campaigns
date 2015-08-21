@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Model.Calculations;
+using campaigns.Models.DAL;
 
 namespace campaigns.Models
 {
@@ -17,10 +18,36 @@ namespace campaigns.Models
 
         public DbSet<Model.Calculations.Attribute> Attributes { get; set; }
 
-        public Model.Calculations.Attribute Attrib(string name, string category)
+    }
+
+    public static class RulesDbContextExtensions
+    {
+        public static Model.Calculations.Attribute Attrib(this RulesDbContext db, string name, string category)
         {
-            return Attributes
-                .FirstOrDefault(a => 0 == String.Compare(a.Name, name) && 0 == String.Compare(a.Category, category));
+            return db.Attributes
+                .FirstOrDefault(a => 0 == String.Compare(a.Name, name, true) && 0 == String.Compare(a.Category, category, true));
+        }
+
+        public static IEnumerable<Model.Calculations.Attribute> AttribsForCategory(this RulesDbContext db, string category)
+        {
+            return db.Attributes.Where(a => 0 == String.Compare(a.Category, category, true));
+        }
+
+        public static IEnumerable<Model.Calculations.Attribute> StandardAttribs(this RulesDbContext db)
+        {
+            return db.Attributes.Where(a => a.IsStandard);
+        }
+
+        public static IEnumerable<AttributeValue> CharacterIntrinsicAttribs(this RulesDbContext db, CharacterSheet characterSheet)
+        {
+            if (null != characterSheet.Race)
+            {
+                yield return new AttributeValue { Attribute = db.Attrib(characterSheet.Race.Name, "race"), Value = 0 };
+            }
+            if (null != characterSheet.Class)
+            {
+                yield return new AttributeValue { Attribute = db.Attrib(characterSheet.Class.Name, "class"), Value = 0 };
+            }
         }
     }
 
@@ -49,7 +76,7 @@ namespace campaigns.Models
             {
                 var source = db.Attrib(ability.ShortName, "ability");
                 var target = db.Attrib(ability.ShortName, "ability-modifier");
-                cache.AddContribution(source.ContributionTo(target, val => (val - 10) / 2));
+                cache.AddContribution(source.ContributionTo(target, val => val / 2 - 5));
             }
             foreach (var skill in rules.Skills)
             {
@@ -72,20 +99,41 @@ namespace campaigns.Models
         private RulesDbContext _db;
         private InMemoryRules _rules;
 
-        public RulesCalculationContext(RulesDbContext db)
+        public RulesCalculationContext(RulesDbContext db, CharacterSheet characterSheet)
         {
             _db = db;
             _rules = Rules(_db);
+
+            var standardAbilityValues =
+                _db.StandardAttribs()
+                .Select(a => new AttributeValue { Attribute = a, Value = 0 });
+
+            _attributeValuesByAttribute =
+                _db.CharacterIntrinsicAttribs(characterSheet)
+                .Concat(standardAbilityValues)
+                .ToDictionary(a => a.Attribute);
+
+            foreach (var ability in characterSheet.AbilityAllocations)
+            {
+                var attrib = _db.Attrib(ability.Ability.ShortName, "ability");
+                _attributeValuesByAttribute[attrib].Value = ability.Points;
+            }
         }
 
-        public ICollection<AttributeValue> InitialValues { get; set; }
+        private IDictionary<Model.Calculations.Attribute, AttributeValue> _attributeValuesByAttribute;
+        public IEnumerable<AttributeValue> ContributingAttributes { get { return _attributeValuesByAttribute.Values; } }
 
-        public ICollection<AttributeContribution> ContributionsBy(Model.Calculations.Attribute source)
+        public bool IsAttributeContributing(Model.Calculations.Attribute source)
+        {
+            return _attributeValuesByAttribute.ContainsKey(source);
+        }
+
+        public IEnumerable<AttributeContribution> AllContributionsBy(Model.Calculations.Attribute source)
         {
             return _rules.ContributionsBy(source);
         }
 
-        public ICollection<AttributeContribution> ContributionsFor(Model.Calculations.Attribute target)
+        public IEnumerable<AttributeContribution> AllContributionsFor(Model.Calculations.Attribute target)
         {
             return _rules.ContributionsFor(target);
         }
@@ -98,23 +146,23 @@ namespace campaigns.Models
             var dnd = new DnD5.RulesDescription();
 
             var races = dnd.Races
-                .Select(r => new Model.Calculations.Attribute { Category = "race", Name = r.Name })
+                .Select(r => new Model.Calculations.Attribute { Category = "race", Name = r.Name, IsStandard = false })
                 .ToDictionary(r => r.Name.ToLower());
             
             var abilities = dnd.Abilities
-                .Select(a => new Model.Calculations.Attribute { Category = "ability", Name = a.ShortName })
+                .Select(a => new Model.Calculations.Attribute { Category = "ability", Name = a.ShortName, IsStandard = true })
                 .ToDictionary(a => a.Name.ToLower());
             
             var abilityMods = dnd.Abilities
-                .Select(a => new Model.Calculations.Attribute { Category = "ability-modifier", Name = a.ShortName })
+                .Select(a => new Model.Calculations.Attribute { Category = "ability-modifier", Name = a.ShortName, IsStandard = true })
                 .ToDictionary(a => a.Name.ToLower());
             
             var classes = dnd.Classes
-                .Select(c => new Model.Calculations.Attribute { Category = "class", Name = c.Name })
+                .Select(c => new Model.Calculations.Attribute { Category = "class", Name = c.Name, IsStandard = false })
                 .ToDictionary(a => a.Name.ToLower());
             
             var skills = dnd.Skills
-                .Select(c => new Model.Calculations.Attribute { Category = "skill", Name = c.Name })
+                .Select(c => new Model.Calculations.Attribute { Category = "skill", Name = c.Name, IsStandard = true })
                 .ToDictionary(a => a.Name.ToLower());
 
             context.Attributes.AddRange(races.Values);

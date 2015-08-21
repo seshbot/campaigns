@@ -10,72 +10,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace campaigns.Models
+namespace campaigns.Models.DAL
 {
     // TODO: LevelDescriptor (spell slots etc) | <- Class and | <- Race?
     // TODO: derived/composite properties use [DatabaseGenerated(DatabaseGeneratedOption.None)]
     // TODO: separate DAO layer into MVC, API and DB
 
-    public enum Dice
-    {
-        D4,
-        D6,
-        D8,
-        D10,
-        D12,
-        D20,
-    }
-
-    public class Ability
-    {
-        public int Id { get; set; }
-        public bool IsStandard { get; set; }
-        public int SortOrder { get; set; }
-        public string Name { get; set; }
-        public string ShortName{ get; set; }
-        [DataType(DataType.Html)]
-        public string Description { get; set; }
-    }
-
-    public class Skill
-    {
-        public int Id { get; set; }
-        public bool IsStandard { get; set; }
-        public virtual Ability Ability { get; set; }
-        public string Name { get; set; }
-        [DataType(DataType.Html)]
-        public string Description { get; set; }
-    }
-
-    public class Class
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        [DataType(DataType.Html)]
-        public string Description { get; set; }
-        //public int HitDie { get; set; }
-        //public List<Ability> SavingThrowProficiencies { get; set; }
-        //public List<string> ArmorAndWeaponProficiencies { get; set; }
-    }
-
-    public class Race
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        [DataType(DataType.Html)]
-        public string Description { get; set; }
-        //public List<AbilityScore> AbilityIncrease { get; set; }
-    }
-
-    public class Rules
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public virtual ICollection<Race> Races { get; set; }
-        public virtual ICollection<Class> Classes { get; set; }
-        public virtual ICollection<Ability> Abilities { get; set; }
-        public virtual ICollection<Skill> Skills { get; set; }
-    }
 
     //// ComplexType
     //// NotMapped
@@ -85,6 +25,7 @@ namespace campaigns.Models
     public class AbilityAllocation
     {
         public int Id { get; set; }
+        public int AbilityId { get; set; }
         public virtual Ability Ability { get; set; }
         public int Points { get; set; }
     }
@@ -92,6 +33,7 @@ namespace campaigns.Models
     public class SkillAllocation
     {
         public int Id { get; set; }
+        public int SkillId { get; set; }
         public virtual Skill Skill { get; set; }
         public int Points { get; set; }
     }
@@ -121,39 +63,47 @@ namespace campaigns.Models
         public int Modifier { get; set; }
     }
 
-    [NotMapped]
     public class CharacterDerivedStatistics
     {
-        public int Level { get; set; }
         public IList<AbilityValueCalculation> Abilities { get; set; }
         public IList<SkillValueCalculation> Skills { get; set; }
         public int ProficiencyBonus { get; set; }
         public IList<int> SpellSlots { get; set; }
     }
 
+    [ComplexType]
+    public class CharacterDescription
+    {
+        public string Name { get; set; }
+        [DataType(DataType.Html), AllowSafeHtml]
+        public string Text { get; set; }
+        public string ShortText
+        {
+            get
+            {
+                return (Text ?? "").Split(new[] { '.', '\n', '<' }).FirstOrDefault();
+            }
+        }
+    }
     public class CharacterSheet
     {
         public int Id { get; set; }
 
-        // description
-        public string Name { get; set; }
-        [DataType(DataType.Html), AllowSafeHtml]
-        public string Description { get; set; }
-        public string ShortDescription {
-            get {
-                return (Description ?? "").Split(new[] { '.', '\n', '<' }).FirstOrDefault();
-            }
-        }
-        public int RaceId { get; set; }
-        public virtual Race Race { get; set; }
-        public int ClassId { get; set; }
-        public virtual Class Class { get; set; }
+        public CharacterDescription Description { get; set; }
 
+        // relationships
+        public int? RaceId { get; set; }
+        public virtual Race Race { get; set; }
+        public int? ClassId { get; set; }
+        public virtual Class Class { get; set; }
+        
         // statistics
-        public int Experience { get; set; }
+        public int? Experience { get; set; }
+        public int? Level { get; set; }
         public virtual IList<AbilityAllocation> AbilityAllocations { get; set; }
         public virtual IList<SkillAllocation> SkillAllocations { get; set; }
 
+        [NotMapped]
         public CharacterDerivedStatistics DerivedStatistics { get; set; }
     }
 }

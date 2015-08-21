@@ -1,4 +1,4 @@
-﻿@model campaigns.Models.CharacterSheet
+﻿@model campaigns.Models.DAL.CharacterSheet
 @using campaigns.Helpers
 
 @{
@@ -17,18 +17,18 @@
         @Html.ValidationSummary(true, "", Html.CustomValidationAttributes())
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Name, Html.CustomLabelAttributes())
+            @Html.LabelFor(model => model.Description.Name, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Name, Html.CustomEditorAttributes())
-                @Html.ValidationMessageFor(model => model.Name, "", Html.CustomValidationAttributes())
+                @Html.EditorFor(model => model.Description.Name, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Description.Name, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Description, Html.CustomLabelAttributes())
+            @Html.LabelFor(model => model.Description.Text, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Description, Html.CustomEditorAttributes())
-                @Html.ValidationMessageFor(model => model.Description, "", Html.CustomValidationAttributes())
+                @Html.EditorFor(model => model.Description.Text, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Description.Text, "", Html.CustomValidationAttributes())
             </div>
         </div>
 
@@ -41,10 +41,10 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.DerivedStatistics.Level, Html.CustomLabelAttributes())
+            @Html.LabelFor(model => model.Level, Html.CustomLabelAttributes())
             <div class="col-md-10">
-                @Html.EditorFor(model => model.DerivedStatistics.Level, Html.CustomEditorAttributes())
-                @Html.ValidationMessageFor(model => model.DerivedStatistics.Level, "", Html.CustomValidationAttributes())
+                @Html.EditorFor(model => model.Level, Html.CustomEditorAttributes())
+                @Html.ValidationMessageFor(model => model.Level, "", Html.CustomValidationAttributes())
             </div>
         </div>
 

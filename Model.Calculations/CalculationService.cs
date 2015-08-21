@@ -163,7 +163,7 @@ namespace Model.Calculations
         public Calculation(ICalculationContext context)
         {
             _context = context;
-            foreach (var val in _context.InitialValues)
+            foreach (var val in _context.ContributingAttributes)
             {
                 var value = RecursivelyAddPending(val.Attribute);
                 if (val.Contributions != null && val.Contributions.Count != 0)

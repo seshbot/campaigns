@@ -1,4 +1,5 @@
-﻿using System;
+﻿using campaigns.Models.DAL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,29 +16,59 @@ namespace campaigns.Models
             _db = db;
         }
 
+        public void AddStandardAttributesTo(CharacterSheet characterSheet)
+        {
+            var existingAbilityIds = new HashSet<int>(characterSheet.AbilityAllocations?.Select(a => a.AbilityId) ?? new int[] { });
+            var existingSkillIds = new HashSet<int>(characterSheet.SkillAllocations?.Select(a => a.SkillId) ?? new int[] { });
+
+            // need to jump through some hoops because LINQ-to-entities cannot construct our types directly
+            var abilityPoints =
+               (from ability in _db.Abilities
+                where ability.IsStandard
+                where !existingAbilityIds.Contains(ability.Id)
+                orderby ability.SortOrder
+                select new { Ability = ability, Points = 8 })
+                .ToList();
+
+            var abilityAllocations = abilityPoints
+                .Select(a => new AbilityAllocation { Ability = a.Ability, Points = a.Points });
+
+            if (null != characterSheet.AbilityAllocations)
+            {
+                abilityAllocations = abilityAllocations.Concat(characterSheet.AbilityAllocations);
+            }
+
+            var skillPoints =
+               (from skill in _db.Skills
+                where skill.IsStandard
+                where !existingSkillIds.Contains(skill.Id)
+                orderby skill.Name
+                select new { Skill = skill, Points = 0 })
+                .ToList();
+
+            var skillAllocations = skillPoints
+                .Select(s => new SkillAllocation { Skill = s.Skill, Points = s.Points });
+
+            if (null != characterSheet.SkillAllocations)
+            {
+                skillAllocations = skillAllocations.Concat(characterSheet.SkillAllocations);
+            }
+
+            characterSheet.AbilityAllocations = abilityAllocations.ToList();
+            characterSheet.SkillAllocations = skillAllocations.ToList();
+        }
+
         public CharacterSheet CreateCharacterSheet()
         {
-            // need to jump through some hoops because LINQ-to-entities cannot construct our types directly
-            var abilityAllocations =
-                _db.Abilities
-                .Where(a => a.IsStandard)
-                .OrderBy(a => a.SortOrder)
-                .Select(a => new { Entity = a }).AsEnumerable()
-                .Select(a => new AbilityAllocation { Ability = a.Entity, Points = 8 }).ToList();
-
-            var skillAllocations =
-                _db.Skills
-                .Where(s => s.IsStandard)
-                .OrderBy(s => s.Name)
-                .Select(s => new { Entity = s }).AsEnumerable()
-                .Select(s => new SkillAllocation { Skill = s.Entity, Points = 0 }).ToList();
-
-            return new CharacterSheet { AbilityAllocations = abilityAllocations, SkillAllocations = skillAllocations };
+            var characterSheet = new CharacterSheet();
+            AddStandardAttributesTo(characterSheet);
+            return characterSheet;
         }
     }
 
     public interface ICharacterSheetService
     {
+        void AddStandardAttributesTo(CharacterSheet characterSheet);
         CharacterSheet CreateCharacterSheet();
     }
 }

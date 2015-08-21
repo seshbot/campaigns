@@ -1,4 +1,5 @@
-﻿using System;
+﻿using campaigns.Models.DAL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -128,15 +129,16 @@ namespace campaigns.Models
             return new LevelInfo { Level = Level, ProficiencyBonus = ProficiencyBonus, XP = xp };
         }
 
-        public static LevelInfo FindForLevel(int level)
+        public static LevelInfo FindForLevel(int? level)
         {
-            if (level <= 0) return _levels.First();
+            if (!level.HasValue || level <= 0) return _levels.First();
             if (level >= _levels.Length) return _levels.Last();
-            return _levels[level - 1];
+            return _levels[level.Value - 1];
         }
 
-        public static LevelInfo FindForXp(int xp)
+        public static LevelInfo FindForXp(int? xp)
         {
+            if (!xp.HasValue) return _levels.First();
             var result = _levels.LastOrDefault(i => i.XP <= xp);
 
             if (null == result)
@@ -145,14 +147,14 @@ namespace campaigns.Models
             return result;
         }
 
-        public static LevelInfo FindBestFit(int xp, int level)
+        public static LevelInfo FindBestFit(int? xp, int? level)
         {
             var byXp = FindForXp(xp);
             var byLevel = FindForLevel(level);
             if (byLevel.Level > byXp.Level)
                 return byLevel;
 
-            return byXp.CloneWithXp(xp);
+            return byXp.CloneWithXp(xp.HasValue ? xp.Value : 0);
         }
     }
 
@@ -196,7 +198,6 @@ namespace campaigns.Models
                 ProficiencyBonus = levelInfo.ProficiencyBonus,
                 Skills = skillCalculations,
                 SpellSlots = new List<int> { },
-                Level = levelInfo.Level,
             };
         }
 
@@ -229,7 +230,7 @@ namespace campaigns.Models
             }
 
             var calculatedValue = contributions.Sum(c => c.Value);
-            var modifier = (calculatedValue - 10) / 2;
+            var modifier = calculatedValue / 2 - 5;
 
             return new AbilityValueCalculation
             {

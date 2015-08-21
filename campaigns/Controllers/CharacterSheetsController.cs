@@ -8,8 +8,9 @@ using System.Web;
 using System.Web.Mvc;
 using campaigns.Models;
 using campaigns.Helpers;
-using campaigns.Models.Api;
+using campaigns.Models.DTO;
 using Model.Calculations;
+using campaigns.Models.DAL;
 
 namespace campaigns.Controllers
 {
@@ -54,41 +55,57 @@ namespace campaigns.Controllers
             return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
         }
 
-        // GET: CharacterSheets/Create
-        public ActionResult Create([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
+        private void EnsureValid(CharacterSheet characterSheet)
         {
-            var newCharacterSheet = _service.CreateCharacterSheet();
-            if (null != characterSheet)
+            characterSheet.Description = characterSheet.Description ?? new CharacterDescription
             {
-                newCharacterSheet = ApiHelper.UpdateFromApiData(_charDb, newCharacterSheet, characterSheet);
+                Name = "",
+                Text = ""
+            };
+
+            // TODO: this shouldnt reference the rules directly
+            var levelInfo = LevelInfo.FindBestFit(characterSheet.Experience, characterSheet.Level);
+            characterSheet.Experience = levelInfo.XP;
+            characterSheet.Level = levelInfo.Level;
+
+            _service.AddStandardAttributesTo(characterSheet);
+        }
+
+        // GET: CharacterSheets/Create
+        public ActionResult Create([Bind(Exclude = "Id")] CharacterSheet characterSheet)
+        {
+            if (null == characterSheet)
+            {
+                characterSheet = _service.CreateCharacterSheet();
+            }
+            else
+            {
+                EnsureValid(characterSheet);
             }
 
-            var calculationContext = new RulesCalculationContext(_rulesDb);
-            calculationContext.InitialValues = (
-                from alloc in newCharacterSheet.AbilityAllocations
-                let attribute = _rulesDb.Attrib(alloc.Ability.ShortName, "ability")
-                select new AttributeValue { Attribute = attribute, Value = alloc.Points }
-                ).ToList();
+            //newCharacterSheet = DtoHelper.UpdateFromDTO(_charDb, newCharacterSheet, characterSheetInfo);
+            var calculationContext = new RulesCalculationContext(_rulesDb, characterSheet);
 
             var calculatedResults = _calcService.Calculate(calculationContext);
 
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
         }
 
         // POST: CharacterSheets/Create
         [HttpPost]
         [ActionName("Create")]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateConfirm([Bind(Exclude = "Id")] CharacterSheetDTO characterSheet)
+        public ActionResult CreateConfirm([Bind(Exclude = "Id")] CharacterSheet characterSheet)
         {
-            var newCharacterSheet = ApiHelper.CreateFromApiData(_charDb, characterSheet);
+            //var newCharacterSheet = DtoHelper.CreateFromDTO(_charDb, characterSheet);
             try
             {
                 if (ModelState.IsValid)
                 {
-                    _charDb.CharacterSheets.Add(newCharacterSheet);
+                    EnsureValid(characterSheet);
+                    _charDb.CharacterSheets.Add(characterSheet);
                     _charDb.SaveChanges();
-                    return RedirectToAction("Details", new { Id = newCharacterSheet.Id });
+                    return RedirectToAction("Details", new { Id = characterSheet.Id });
                 }
             }
             catch (DataException)
@@ -96,7 +113,7 @@ namespace campaigns.Controllers
                 ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
             }
             
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheet));
         }
 
         // GET: CharacterSheets/Edit/5
@@ -115,34 +132,36 @@ namespace campaigns.Controllers
         }
 
         // POST: CharacterSheets/Edit/5
-        [HttpPost]
+        [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(CharacterSheetDTO characterSheet)
+        public ActionResult EditConfirmed(int? id)
         {
             // TODO: track only fields that change? send viewmodel through and use http://automapper.org/ ?
             // Use db.Entry on the entity instance to set its state to Unchanged, and then set 
             // Property("PropertyName").IsModified to true on each entity property that is included in the view model
-            if (!characterSheet.Id.HasValue)
+            if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            
-            var newCharacterSheet = _charDb.CharacterSheets.Find(characterSheet.Id);
-            _charDb.Entry(newCharacterSheet).State = EntityState.Detached;
-            try
-            {
-                var updatedCharacterSheet = ApiHelper.UpdateFromApiData(_charDb, newCharacterSheet, characterSheet);
-                _charDb.CharacterSheets.Add(updatedCharacterSheet);
-                _charDb.SaveChanges();
 
-                return RedirectToAction("Details", new { Id = updatedCharacterSheet.Id });
-            }
-            catch (DataException)
+            var characterSheetToUpdate = _charDb.CharacterSheets.Find(id);
+            _charDb.Entry(characterSheetToUpdate).State = EntityState.Detached;
+            if (TryUpdateModel(characterSheetToUpdate))
             {
-                ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
+                EnsureValid(characterSheetToUpdate);
+                try
+                {
+                    // create new entry, dont update existing entry
+                    _charDb.CharacterSheets.Add(characterSheetToUpdate);
+                    _charDb.SaveChanges();
+                    return RedirectToAction("Details", new { Id = characterSheetToUpdate.Id });
+                }
+                catch (DataException)
+                {
+                    ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
+                }
             }
-
-            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(newCharacterSheet));
+            return View(CharacterSheetCalculator.AddDerivedStatisticsTo(characterSheetToUpdate));
         }
 
         // GET: CharacterSheets/Delete/5

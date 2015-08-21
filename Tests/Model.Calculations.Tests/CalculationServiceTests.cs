@@ -19,9 +19,16 @@ namespace Model.Calculations.Tests
             service = new CalculationService();
         }
 
-        [TestMethod]
-        public void TestContributionsCascade()
+        [TestCleanup]
+        public void TestCleanup()
         {
+        }
+
+        [TestMethod]
+        public void AttributeContributionsCascade()
+        {
+            context.SetInitialValue(context.Race("gnome"), 0);
+
             context.SetInitialValue(context.Ability("str"), 8);
             context.SetInitialValue(context.Ability("int"), 8);
 
@@ -41,6 +48,21 @@ namespace Model.Calculations.Tests
             result.AssertAttribContributionFrom(context.Ability("int"), context.Race("gnome"));
             result.AssertAttribContributionFrom(context.Skill("arcana"), context.AbilityMod("int"));
         }
+
+        [TestMethod]
+        public void UnrelatedAttributeContributionsDoNotCascade()
+        {
+            context.SetInitialValue(context.Race("human"), 0);
+
+            context.SetInitialValue(context.Ability("str"), 8);
+            context.SetInitialValue(context.Ability("int"), 8);
+
+            var result = service.Calculate(context);
+
+            result.AssertNoAttrib(context.Race("gnome"));
+            result.AssertAttribValue(context.Ability("int"), 8);
+            result.AssertAttribValue(context.Skill("arcana"), -1);
+        }
     }
 
     static class CalculationResultHelper
@@ -50,6 +72,12 @@ namespace Model.Calculations.Tests
             var values = result.AttributeValues.Where(val => val.Attribute == attrib);
             Assert.IsTrue(values.Count() == 1);
             Assert.AreEqual(value, values.First().Value);
+        }
+
+        public static void AssertNoAttrib(this CalculationResult result, Attribute attrib)
+        {
+            var count = result.AttributeValues.Count(val => val.Attribute == attrib);
+            Assert.AreEqual(0, count);
         }
 
         public static void AssertAttribContributionFrom(this CalculationResult result, Attribute attrib, Attribute contributingAttrib)

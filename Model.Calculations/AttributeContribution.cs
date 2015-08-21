@@ -14,6 +14,8 @@ namespace Model.Calculations
         public int Id { get; set; }
         public string Name { get; set; }
         public string Category { get; set; }
+        /// indicates that this attribute should be included in all calculations
+        public bool IsStandard { get; set; }
     }
 
     public class AttributeContribution
