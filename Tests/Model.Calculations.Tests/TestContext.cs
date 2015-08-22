@@ -36,6 +36,16 @@ namespace Model.Calculations.Tests
             return _rules.ContributionsFor(target);
         }
 
+        public IEnumerable<AttributeContribution> AllContributionsFor(int targetId)
+        {
+            return _rules.ContributionsFor(targetId);
+        }
+
+        public IEnumerable<AttributeContribution> AllContributionsBy(int sourceId)
+        {
+            return _rules.ContributionsBy(sourceId);
+        }
+
         public TestContext()
         {
             _rules = new InMemoryRules();
@@ -81,7 +91,7 @@ namespace Model.Calculations.Tests
 
             foreach (var mod in _abilities.Keys)
             {
-                _rules.AddContribution(_abilities[mod].ContributionTo(_abilityMods[mod], srcVal => (srcVal - 10) / 2));
+                _rules.AddContribution(_abilities[mod].ContributionTo(_abilityMods[mod], srcVal => (srcVal / 2) - 5));
             }
 
             // TODO:

@@ -19,7 +19,7 @@ namespace Model.Calculations
 
         public static AttributeContribution ContributionTo(this Attribute source, Attribute target, Expression<Func<int, int>> formula)
         {
-            return new AttributeContribution { Target = target, Source = source, Formula = formula };
+            return new AttributeContribution { Target = target, Source = source, FormulaExpression = formula };
         }
 
         public static AttributeContribution ConstantContributionFrom(this Attribute target, Attribute source, int val)

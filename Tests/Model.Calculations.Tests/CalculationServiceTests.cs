@@ -25,6 +25,15 @@ namespace Model.Calculations.Tests
         }
 
         [TestMethod]
+        public void SimpleAttributecontributionTest()
+        {
+            context.SetInitialValue(context.Race("gnome"), 0);
+            context.SetInitialValue(context.Ability("int"), 8);
+            var result = service.Calculate(context);
+            result.AssertAttribValue(context.Ability("int"), 10);
+        }
+
+        [TestMethod]
         public void AttributeContributionsCascade()
         {
             context.SetInitialValue(context.Race("gnome"), 0);

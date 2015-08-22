@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serialize.Linq.Serializers;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,6 +17,11 @@ namespace Model.Calculations
         public string Category { get; set; }
         /// indicates that this attribute should be included in all calculations
         public bool IsStandard { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1} ({2})", Id, Name, Category);
+        }
     }
 
     public class AttributeContribution
@@ -27,6 +33,33 @@ namespace Model.Calculations
         public virtual Attribute Target { get; set; }
 
         [Required]
-        public Expression<Func<int, int>> Formula { get; set; }
+        public string FormulaJson { get; set; }
+        
+        public Expression<Func<int, int>> FormulaExpression
+        {
+            set
+            {
+                if (null == value)
+                    throw new ArgumentNullException("formula");
+
+                var serializer = new ExpressionSerializer(new JsonSerializer());
+                FormulaJson = serializer.SerializeText(value);
+            }
+        }
+
+        private Func<int, int> _formula;
+        public Func<int, int> Formula
+        {
+            get
+            {
+                if (false || null == _formula)
+                {
+                    var serializer = new ExpressionSerializer(new JsonSerializer());
+                    var expression = (Expression<Func<int, int>>)serializer.DeserializeText(FormulaJson);
+                    _formula = expression.Compile();
+                }
+                return _formula;
+            }
+        }
     }
 }

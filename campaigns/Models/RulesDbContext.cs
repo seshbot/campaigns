@@ -17,6 +17,7 @@ namespace campaigns.Models
         }
 
         public DbSet<Model.Calculations.Attribute> Attributes { get; set; }
+        //public DbSet<Model.Calculations.AttributeContribution> AttributeContributions { get; set; }
 
     }
 
@@ -108,24 +109,24 @@ namespace campaigns.Models
                 _db.StandardAttribs()
                 .Select(a => new AttributeValue { Attribute = a, Value = 0 });
 
-            _attributeValuesByAttribute =
+            _attributeValuesByAttributeId =
                 _db.CharacterIntrinsicAttribs(characterSheet)
                 .Concat(standardAbilityValues)
-                .ToDictionary(a => a.Attribute);
+                .ToDictionary(a => a.Attribute.Id);
 
             foreach (var ability in characterSheet.AbilityAllocations)
             {
                 var attrib = _db.Attrib(ability.Ability.ShortName, "ability");
-                _attributeValuesByAttribute[attrib].Value = ability.Points;
+                _attributeValuesByAttributeId[attrib.Id].Value = ability.Points;
             }
         }
 
-        private IDictionary<Model.Calculations.Attribute, AttributeValue> _attributeValuesByAttribute;
-        public IEnumerable<AttributeValue> ContributingAttributes { get { return _attributeValuesByAttribute.Values; } }
+        private IDictionary<int, AttributeValue> _attributeValuesByAttributeId;
+        public IEnumerable<AttributeValue> ContributingAttributes { get { return _attributeValuesByAttributeId.Values; } }
 
         public bool IsAttributeContributing(Model.Calculations.Attribute source)
         {
-            return _attributeValuesByAttribute.ContainsKey(source);
+            return _attributeValuesByAttributeId.ContainsKey(source.Id);
         }
 
         public IEnumerable<AttributeContribution> AllContributionsBy(Model.Calculations.Attribute source)
@@ -136,6 +137,16 @@ namespace campaigns.Models
         public IEnumerable<AttributeContribution> AllContributionsFor(Model.Calculations.Attribute target)
         {
             return _rules.ContributionsFor(target);
+        }
+
+        public IEnumerable<AttributeContribution> AllContributionsBy(int sourceId)
+        {
+            return _rules.ContributionsBy(sourceId);
+        }
+
+        public IEnumerable<AttributeContribution> AllContributionsFor(int targetId)
+        {
+            return _rules.ContributionsFor(targetId);
         }
     }
 

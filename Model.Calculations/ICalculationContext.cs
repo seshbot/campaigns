@@ -12,6 +12,8 @@ namespace Model.Calculations
         IEnumerable<AttributeValue> ContributingAttributes { get; }
         IEnumerable<AttributeContribution> AllContributionsFor(Attribute target);
         IEnumerable<AttributeContribution> AllContributionsBy(Attribute source);
+        IEnumerable<AttributeContribution> AllContributionsFor(int targetId);
+        IEnumerable<AttributeContribution> AllContributionsBy(int sourceId);
     }
 
     public static class CalculationContextExtensions
@@ -26,6 +28,20 @@ namespace Model.Calculations
         public static ICollection<AttributeContribution> ContributionsBy(this ICalculationContext ctx, Attribute source)
         {
             return ctx.AllContributionsBy(source)
+                .Where(c => ctx.IsAttributeContributing(c.Target))
+                .ToList();
+        }
+
+        public static ICollection<AttributeContribution> ContributionsFor(this ICalculationContext ctx, int targetId)
+        {
+            return ctx.AllContributionsFor(targetId)
+                .Where(c => ctx.IsAttributeContributing(c.Source))
+                .ToList();
+        }
+
+        public static ICollection<AttributeContribution> ContributionsBy(this ICalculationContext ctx, int sourceId)
+        {
+            return ctx.AllContributionsBy(sourceId)
                 .Where(c => ctx.IsAttributeContributing(c.Target))
                 .ToList();
         }
@@ -47,6 +63,16 @@ namespace Model.Calculations
             if (null == target)
                 throw new ArgumentNullException("target");
             return _contributionsForAttributeId[target.Id];
+        }
+
+        public ICollection<AttributeContribution> ContributionsBy(int sourceId)
+        {
+            return _contributionsByAttributeId[sourceId];
+        }
+
+        public ICollection<AttributeContribution> ContributionsFor(int targetId)
+        {
+            return _contributionsForAttributeId[targetId];
         }
 
         public Attribute GetAttribute(string name, string category)

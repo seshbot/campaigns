@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Serialize.Linq.Serializers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +13,10 @@ namespace Model.Calculations
         public Attribute Attribute { get; set; }
         public int Value { get; set; }
         public ICollection<AttributeContribution> Contributions { get; set; }
+        public override string ToString()
+        {
+            return string.Format("{0}:{1} ({2})", Attribute, Value, Contributions.Count);
+        }
     }
     
     public class CalculationResult
@@ -50,22 +56,22 @@ namespace Model.Calculations
     class Calculation
     {
         ICalculationContext _context;
-        IDictionary<Attribute, AttributeValue> _completedAttributes = new Dictionary<Attribute, AttributeValue>();
-        IDictionary<Attribute, AttributeValue> _pendingAttributes = new Dictionary<Attribute, AttributeValue>();
-        IDictionary<Attribute, ISet<Attribute>> _pendingAttributeDependencies = new Dictionary<Attribute, ISet<Attribute>>();
+        IDictionary<int, ISet<int>> _pendingAttributeDependencies = new Dictionary<int, ISet<int>>();
+        IDictionary<int, AttributeValue> _completedValues = new Dictionary<int, AttributeValue>();
+        IDictionary<int, AttributeValue> _pendingValues = new Dictionary<int, AttributeValue>();
 
         public CalculationResult Result { get; private set; }
 
         // returns number of dependencies this might free up
         private int SetCompleted(AttributeValue value)
         {
-            _completedAttributes.Add(value.Attribute, value);
-            _pendingAttributes.Remove(value.Attribute);
-            _pendingAttributeDependencies.Remove(value.Attribute);
+            _completedValues.Add(value.Attribute.Id, value);
+            _pendingValues.Remove(value.Attribute.Id);
+            _pendingAttributeDependencies.Remove(value.Attribute.Id);
             int dependencies = 0;
             foreach (var kvp in _pendingAttributeDependencies)
             {
-                if (kvp.Value.Remove(value.Attribute))
+                if (kvp.Value.Remove(value.Attribute.Id))
                 {
                     dependencies++;
                 }
@@ -77,26 +83,32 @@ namespace Model.Calculations
         private void AddValueAsPending(AttributeValue value)
         {
             var target = value.Attribute;
-            if (_completedAttributes.ContainsKey(target))
+            if (_completedValues.ContainsKey(target.Id))
             {
                 throw new Exception("calculation engine assertion: adding pending calculation for completed attribute");
             }
 
-            _pendingAttributes.Add(target, value);
+            _pendingValues.Add(target.Id, value);
 
-            var targetDependencies =
-                from contrib in _context.ContributionsFor(target)
-                let dependency = contrib.Source
-                where !_completedAttributes.ContainsKey(dependency)
-                select dependency;
+            var contributionsForTarget =
+                (from contrib in _context.AllContributionsFor(target)
+                 let dependency = contrib.Source
+                 where _context.IsAttributeContributing(dependency) &&
+                      !_completedValues.ContainsKey(dependency.Id)
+                 select contrib
+                ).ToList();
 
-            _pendingAttributeDependencies.Add(target, new HashSet<Attribute>(targetDependencies));
+            var targetDependencyIds =
+                from contrib in contributionsForTarget
+                select contrib.Source.Id;
+            
+            _pendingAttributeDependencies.Add(target.Id, new HashSet<int>(targetDependencyIds));
         }
 
         private AttributeValue GetOrAddPendingValue(Attribute target)
         {
             AttributeValue result;
-            if (!_pendingAttributes.TryGetValue(target, out result))
+            if (!_pendingValues.TryGetValue(target.Id, out result))
             {
                 result = new AttributeValue
                 {
@@ -116,18 +128,18 @@ namespace Model.Calculations
             value.Contributions.Add(contribution);
         }
 
-        private IList<Attribute> GetPrepared()
+        private IList<Attribute> GetPreparedAttributes()
         {
             return (
                 from kvp in _pendingAttributeDependencies
-                let attribute = kvp.Key
-                let dependencies = kvp.Value
-                where dependencies.Count == 0
-                select attribute
+                let attributeId = kvp.Key
+                let dependencyIds = kvp.Value
+                where dependencyIds.Count == 0
+                select _pendingValues[attributeId].Attribute
             ).ToList();
         }
 
-        private void CompletePendingCalculation(Attribute target)
+        private int CompletePendingCalculation(Attribute target)
         {
             var value = GetOrAddPendingValue(target);
             if (null != value.Contributions)
@@ -135,37 +147,28 @@ namespace Model.Calculations
                 foreach (var contribution in value.Contributions)
                 {
                     var source = contribution.Source;
-                    if (target != contribution.Target)
+                    if (target.Id != contribution.Target.Id)
                         throw new Exception("calculation engine assertion: unexpected calculation target");
 
-                    var func = contribution.Formula.Compile();
-
-                    var sourceValue = _completedAttributes[source].Value;
-                    value.Value += func(sourceValue);
+                    var sourceValue = _completedValues[source.Id].Value;
+                    value.Value += contribution.Formula(sourceValue);
                 }
             }
-            SetCompleted(value);
+            return SetCompleted(value);
         }
 
-        private AttributeValue RecursivelyAddPending(Attribute attribute, ISet<Attribute> added = null)
+        private AttributeValue RecursivelyAddPending(Attribute attribute)
         {
-            if (null == added)
+            if (_pendingValues.ContainsKey(attribute.Id))
             {
-                added = new HashSet<Attribute>();
-            }
-            else
-            {
-                if (added.Contains(attribute))
-                {
-                    throw new Exception("calculation engine assertion: dependency loop detected while adding attribute hierarchy");
-                }
+                return null;
+                throw new Exception("calculation engine assertion: dependency loop detected while adding attribute hierarchy");
             }
 
             var result = GetOrAddPendingValue(attribute);
-            added.Add(attribute);
             foreach (var source in _context.ContributionsFor(attribute).Select(c => c.Source))
             {
-                RecursivelyAddPending(source, added);
+                RecursivelyAddPending(source);
             }
 
             return result;
@@ -174,9 +177,11 @@ namespace Model.Calculations
         public Calculation(ICalculationContext context)
         {
             _context = context;
+
             foreach (var val in _context.ContributingAttributes)
             {
-                var value = RecursivelyAddPending(val.Attribute);
+                var attribute = val.Attribute;
+                var value = GetOrAddPendingValue(attribute);
                 if (val.Contributions != null && val.Contributions.Count != 0)
                 {
                     throw new Exception("calculation engine assertion: initial values cannot have contributions (or should they?)");
@@ -184,28 +189,28 @@ namespace Model.Calculations
                 value.Value = val.Value;
             }
 
-            var prepared = GetPrepared();
+            var prepared = GetPreparedAttributes();
             while (prepared.Count > 0)
             {
                 foreach (var attribute in prepared)
                 {
                     // this will remove the attribute from the 'pending' queue
-                    CompletePendingCalculation(attribute);
+                    var removed = CompletePendingCalculation(attribute);
 
                     foreach (var contribution in _context.ContributionsBy(attribute))
                     {
                         AddContribution(contribution);
                     }
                 }
-                prepared = GetPrepared();
+                prepared = GetPreparedAttributes();
             }
 
-            if (_pendingAttributes.Count > 0)
+            if (_pendingValues.Count > 0)
             {
                 throw new Exception("not enough info to calculate all attributes");
             }
 
-            Result = new CalculationResult { AttributeValues = _completedAttributes.Values };
+            Result = new CalculationResult { AttributeValues = _completedValues.Values };
         }
     }
 }
