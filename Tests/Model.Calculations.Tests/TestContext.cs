@@ -57,25 +57,25 @@ namespace Model.Calculations.Tests
 
             _races = new Dictionary<string, Attribute>
             {
-                { "human", _rules.CreateAttribute("human", "race", isStandard: false) },
-                { "gnome", _rules.CreateAttribute("gnome", "race", isStandard: false) }
+                { "human", _rules.CreateAttribute("human", "races", isStandard: false) },
+                { "gnome", _rules.CreateAttribute("gnome", "races", isStandard: false) }
             };
 
             _abilities = new Dictionary<string, Attribute>
             {
-                { "str", _rules.CreateAttribute("str", "ability", isStandard: true) },
-                { "int", _rules.CreateAttribute("int", "ability", isStandard: true) }
+                { "str", _rules.CreateAttribute("str", "abilities", isStandard: true) },
+                { "int", _rules.CreateAttribute("int", "abilities", isStandard: true) }
             };
 
             _abilityMods =
                 _abilities.Values
-                .Select(attrib => _rules.CreateAttribute(attrib.Name, "ability-modifier", isStandard: true))
+                .Select(attrib => _rules.CreateAttribute(attrib.Name, "ability-modifiers", isStandard: true))
                 .ToDictionary(m => m.Name);
 
             _skills = new Dictionary<string, Attribute>
             {
-                { "athletics", _rules.CreateAttribute("athletics", "skill", isStandard: true) },
-                { "arcana", _rules.CreateAttribute("arcana", "skill", isStandard: true) }
+                { "athletics", _rules.CreateAttribute("athletics", "skills", isStandard: true) },
+                { "arcana", _rules.CreateAttribute("arcana", "skills", isStandard: true) }
             };
 
             // TODO: this should be standard behaviour

@@ -7,7 +7,6 @@
 
 <h2>Edit</h2>
 
-
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
@@ -27,7 +26,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Description, Html.CustomLabelAttributes())
+            @Html.LabelFor(model => model.Description.Text, Html.CustomLabelAttributes())
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Description.Text, Html.CustomEditorAttributes())
                 @Html.ValidationMessageFor(model => model.Description.Text, "", Html.CustomValidationAttributes())

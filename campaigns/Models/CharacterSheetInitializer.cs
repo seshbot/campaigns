@@ -18,7 +18,7 @@ namespace campaigns.Models
             context.Abilities.AddRange(rules.Abilities);
             context.Skills.AddRange(rules.Skills);
 
-            context.RuleSets.Add(new RuleSet { Name = "Dungeons and Dragons 5th Edition", Races = rules.Races, Classes = rules.Classes, Abilities = rules.Abilities, Skills = rules.Skills });
+            context.RuleSets.Add(new RuleSet { Name = "dnd5e", Description = "Dungeons and Dragons 5th Edition", Races = rules.Races, Classes = rules.Classes, Abilities = rules.Abilities, Skills = rules.Skills });
 
             context.SaveChanges();
         }

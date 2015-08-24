@@ -105,10 +105,10 @@ namespace campaigns.Models
             // calculated abilities
             //
 
-            var abilityAttribValuesByName = calculatedResults.AttributeValuesForCategory("ability")
+            var abilityAttribValuesByName = calculatedResults.AttributeValuesForCategory("abilities")
                 .ToDictionary(val => val.Attribute.Name.ToLower());
 
-            var abilityModAttribValuesByName = calculatedResults.AttributeValuesForCategory("ability-modifier")
+            var abilityModAttribValuesByName = calculatedResults.AttributeValuesForCategory("ability-modifiers")
                 .ToDictionary(val => val.Attribute.Name.ToLower());
 
             var abilityCalculations =
@@ -125,7 +125,7 @@ namespace campaigns.Models
             // calculated skills
             //
 
-            var skillAttribValuesByName = calculatedResults.AttributeValuesForCategory("skill")
+            var skillAttribValuesByName = calculatedResults.AttributeValuesForCategory("skills")
                 .ToDictionary(val => val.Attribute.Name.ToLower());
 
             var skillCalculations =

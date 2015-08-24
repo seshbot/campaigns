@@ -63,7 +63,7 @@
 <script>
     var apiRules = {};
 
-    var rulesApiUri = '/api/rules';
+    var rulesApiUri = '/api/v1/rules';
 
     function apiUriFor(e, id) {
         var uri = rulesApiUri + '/' + e;
@@ -76,7 +76,7 @@
     $.ajaxSetup({ cache: false });
 
     $(document).ready(function () {
-        $.getJSON(apiUriFor(''))
+        $.getJSON(apiUriFor('dnd5e'))
             .done(function (data) {
                 apiRules = data;
                 configureModal();
