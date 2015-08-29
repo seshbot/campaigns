@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "campaigns", "campaigns\campaigns.csproj", "{4B7E0027-FA2C-4E33-8D47-72DB6357AB44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campaigns", "campaigns\Campaigns.csproj", "{4B7E0027-FA2C-4E33-8D47-72DB6357AB44}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{9027F1BE-B012-4606-9394-D47D6AAB87FD}"
 	ProjectSection(SolutionItems) = preProject
@@ -16,13 +16,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configura
 		PublishScripts\Configurations\campaigns-WAWS-dev.json = PublishScripts\Configurations\campaigns-WAWS-dev.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model.Calculations", "Model.Calculations\Model.Calculations.csproj", "{2EE9ECD1-B698-4697-A889-50128A885754}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Calculation", "Services.Calculation\Services.Calculation.csproj", "{2EE9ECD1-B698-4697-A889-50128A885754}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model.Calculations.Tests", "Tests\Model.Calculations.Tests\Model.Calculations.Tests.csproj", "{30C3BE6A-7141-44B0-813E-3995CEFF185A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Calculations.Tests", "Tests\Services.Calculation.Tests\Services.Calculations.Tests.csproj", "{30C3BE6A-7141-44B0-813E-3995CEFF185A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{60F7A23D-C301-44BB-A448-D892102FD131}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{62A74486-0F52-4DB9-9651-A8B0CF6F38E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Rules", "Services.Rules\Services.Rules.csproj", "{433A3AA7-7DAF-41F8-B925-7D0D98939A7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campaigns.Core", "Campaigns.Core\Campaigns.Core.csproj", "{126B9575-C062-4B4E-982C-6686328EDA82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Campaigns.Core.Tests", "Campaigns.Core.Tests\Campaigns.Core.Tests.csproj", "{4BE20252-9CF9-4D51-8BC7-0560BBDDA522}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Rules.Tests", "Services.Rules.Tests\Services.Rules.Tests.csproj", "{E08CCBC4-658C-4FC3-9669-1929EC58FE72}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,13 +48,30 @@ Global
 		{30C3BE6A-7141-44B0-813E-3995CEFF185A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30C3BE6A-7141-44B0-813E-3995CEFF185A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30C3BE6A-7141-44B0-813E-3995CEFF185A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{433A3AA7-7DAF-41F8-B925-7D0D98939A7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{433A3AA7-7DAF-41F8-B925-7D0D98939A7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{433A3AA7-7DAF-41F8-B925-7D0D98939A7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{433A3AA7-7DAF-41F8-B925-7D0D98939A7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{126B9575-C062-4B4E-982C-6686328EDA82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{126B9575-C062-4B4E-982C-6686328EDA82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{126B9575-C062-4B4E-982C-6686328EDA82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{126B9575-C062-4B4E-982C-6686328EDA82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BE20252-9CF9-4D51-8BC7-0560BBDDA522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BE20252-9CF9-4D51-8BC7-0560BBDDA522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BE20252-9CF9-4D51-8BC7-0560BBDDA522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BE20252-9CF9-4D51-8BC7-0560BBDDA522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E08CCBC4-658C-4FC3-9669-1929EC58FE72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E08CCBC4-658C-4FC3-9669-1929EC58FE72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E08CCBC4-658C-4FC3-9669-1929EC58FE72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E08CCBC4-658C-4FC3-9669-1929EC58FE72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D829F17D-D40E-4C69-8ED6-A4AECE7914D4} = {9027F1BE-B012-4606-9394-D47D6AAB87FD}
-		{2EE9ECD1-B698-4697-A889-50128A885754} = {62A74486-0F52-4DB9-9651-A8B0CF6F38E5}
 		{30C3BE6A-7141-44B0-813E-3995CEFF185A} = {60F7A23D-C301-44BB-A448-D892102FD131}
+		{4BE20252-9CF9-4D51-8BC7-0560BBDDA522} = {60F7A23D-C301-44BB-A448-D892102FD131}
+		{E08CCBC4-658C-4FC3-9669-1929EC58FE72} = {60F7A23D-C301-44BB-A448-D892102FD131}
 	EndGlobalSection
 EndGlobal

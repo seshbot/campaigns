@@ -1,4 +1,4 @@
-﻿using campaigns.Models.DAL;
+﻿using Campaigns.Models.DAL;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Models
+namespace Campaigns.Models
 {
     public class CharacterSheetDbContext : DbContext
     {

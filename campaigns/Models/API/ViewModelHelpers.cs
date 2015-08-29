@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Services.Rules.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Models.API
+namespace Campaigns.Models.API
 {
     public static class ViewModelHelpers
     {

@@ -8,10 +8,10 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
-using campaigns.Models;
+using Campaigns.Models;
 using System.Linq.Expressions;
 
-namespace campaigns.Controllers.Api.Rules
+namespace Campaigns.Controllers.Api.Rules
 {
     // http://pluralsight.com/training/Player?author=scott-allen&name=aspdotnet-mvc5-fundamentals-m5-webapi2&mode=live&clip=0&course=aspdotnet-mvc5-fundamentals
     // TODO: JSON data should be prepended with ")]}',#chr( 10 )#" 

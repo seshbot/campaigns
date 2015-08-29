@@ -6,43 +6,16 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model.Calculations
+namespace Services.Calculation
 {
-    public class AttributeValue
-    {
-        public Attribute Attribute { get; set; }
-        public int Value { get; set; }
-        public ICollection<AttributeContribution> Contributions { get; set; }
-        public override string ToString()
-        {
-            return string.Format("{0}:{1} ({2})", Attribute, Value, Contributions.Count);
-        }
-    }
-    
-    public class CalculationResult
-    {
-        public ICollection<AttributeValue> AttributeValues { get; set; }
-        public IEnumerable<AttributeValue> AttributeValuesForCategory(string category)
-        {
-            return AttributeValues.Where(val => 0 == string.Compare(val.Attribute.Category, category, true));
-        }
-        public AttributeValue AttributeValue(string name, string category)
-        {
-            return AttributeValues
-                .FirstOrDefault(val => 
-                    0 == string.Compare(val.Attribute.Category, category, true) &&
-                    0 == string.Compare(val.Attribute.Name, name, true));
-        }
-    }
-
     public interface ICalculationService
     {
-        CalculationResult Calculate(ICalculationContext context);
+        CalculationResult Calculate(ICalculationRules context);
     }
 
     public class CalculationService : ICalculationService
     {
-        public CalculationResult Calculate(ICalculationContext context)
+        public CalculationResult Calculate(ICalculationRules context)
         {
             var calculation = new Calculation(context);
             return calculation.Result;
@@ -55,7 +28,7 @@ namespace Model.Calculations
 
     class Calculation
     {
-        ICalculationContext _context;
+        ICalculationRules _context;
         IDictionary<int, ISet<int>> _pendingAttributeDependencies = new Dictionary<int, ISet<int>>();
         IDictionary<int, AttributeValue> _completedValues = new Dictionary<int, AttributeValue>();
         IDictionary<int, AttributeValue> _pendingValues = new Dictionary<int, AttributeValue>();
@@ -80,6 +53,22 @@ namespace Model.Calculations
             return dependencies;
         }
 
+        private IEnumerable<AttributeContribution> GetPendingContributionsTo(Services.Calculation.Attribute target)
+        {
+            return from contrib in _context.AllContributionsTo(target)
+                   let dependency = contrib.Source
+                   where null != dependency &&
+                         _context.IsAttributeContributing(dependency) &&
+                         !_completedValues.ContainsKey(dependency.Id)
+                   select contrib;
+        }
+
+        private IEnumerable<AttributeContribution> GetDirectContributionsTo(Services.Calculation.Attribute target)
+        {
+            return _context.AllContributionsTo(target)
+                .Where(c => null == c.Source);
+        }
+
         private void AddValueAsPending(AttributeValue value)
         {
             var target = value.Attribute;
@@ -90,17 +79,8 @@ namespace Model.Calculations
 
             _pendingValues.Add(target.Id, value);
 
-            var contributionsForTarget =
-                (from contrib in _context.AllContributionsFor(target)
-                 let dependency = contrib.Source
-                 where _context.IsAttributeContributing(dependency) &&
-                      !_completedValues.ContainsKey(dependency.Id)
-                 select contrib
-                ).ToList();
-
-            var targetDependencyIds =
-                from contrib in contributionsForTarget
-                select contrib.Source.Id;
+            var targetDependencyIds = GetPendingContributionsTo(target).ToList()
+                .Select(c => c.Source.Id);
             
             _pendingAttributeDependencies.Add(target.Id, new HashSet<int>(targetDependencyIds));
         }
@@ -110,10 +90,13 @@ namespace Model.Calculations
             AttributeValue result;
             if (!_pendingValues.TryGetValue(target.Id, out result))
             {
+                var directDependencies = GetDirectContributionsTo(target).ToList();
+                var directDependencyContributions = directDependencies.Select(c => c.Formula(0));
+
                 result = new AttributeValue
                 {
                     Attribute = target,
-                    Value = 0,
+                    Value = directDependencyContributions.Sum(),
                     Contributions = new List<AttributeContribution>()
                 };
                 AddValueAsPending(result);
@@ -150,43 +133,20 @@ namespace Model.Calculations
                     if (target.Id != contribution.Target.Id)
                         throw new Exception("calculation engine assertion: unexpected calculation target");
 
-                    var sourceValue = _completedValues[source.Id].Value;
+                    var sourceValue = null == source ? 0 : _completedValues[source.Id].Value;
                     value.Value += contribution.Formula(sourceValue);
                 }
             }
             return SetCompleted(value);
         }
 
-        private AttributeValue RecursivelyAddPending(Attribute attribute)
-        {
-            if (_pendingValues.ContainsKey(attribute.Id))
-            {
-                return null;
-                throw new Exception("calculation engine assertion: dependency loop detected while adding attribute hierarchy");
-            }
-
-            var result = GetOrAddPendingValue(attribute);
-            foreach (var source in _context.ContributionsFor(attribute).Select(c => c.Source))
-            {
-                RecursivelyAddPending(source);
-            }
-
-            return result;
-        }
-
-        public Calculation(ICalculationContext context)
+        public Calculation(ICalculationRules context)
         {
             _context = context;
 
-            foreach (var val in _context.ContributingAttributes)
+            foreach (var attribute in _context.ContributingAttributes)
             {
-                var attribute = val.Attribute;
                 var value = GetOrAddPendingValue(attribute);
-                if (val.Contributions != null && val.Contributions.Count != 0)
-                {
-                    throw new Exception("calculation engine assertion: initial values cannot have contributions (or should they?)");
-                }
-                value.Value = val.Value;
             }
 
             var prepared = GetPreparedAttributes();

@@ -1,5 +1,6 @@
-﻿using campaigns.Models;
-using campaigns.Models.API;
+﻿using Campaigns.Models;
+using Campaigns.Models.API;
+using Services.Rules.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 
-namespace campaigns.Controllers.Api.Rules
+namespace Campaigns.Controllers.Api.Rules
 {
     static class RulesDbViewModelExtensions
     {
@@ -23,7 +24,7 @@ namespace campaigns.Controllers.Api.Rules
             return CreateAttributeViewModel(db, attrib);
         }
 
-        public static AttributeViewModel CreateAttributeViewModel(this RulesDbContext db, Model.Calculations.Attribute attribute)
+        public static AttributeViewModel CreateAttributeViewModel(this RulesDbContext db, Services.Calculation.Attribute attribute)
         {
             if (null == attribute)
             {

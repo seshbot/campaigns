@@ -4,73 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model.Calculations
+namespace Services.Calculation
 {
-    public interface ICalculationContext
-    {
-        bool IsAttributeContributing(Attribute source);
-        IEnumerable<AttributeValue> ContributingAttributes { get; }
-        IEnumerable<AttributeContribution> AllContributionsFor(Attribute target);
-        IEnumerable<AttributeContribution> AllContributionsBy(Attribute source);
-        IEnumerable<AttributeContribution> AllContributionsFor(int targetId);
-        IEnumerable<AttributeContribution> AllContributionsBy(int sourceId);
-    }
-
-    public static class CalculationContextExtensions
-    {
-        public static ICollection<AttributeContribution> ContributionsFor(this ICalculationContext ctx, Attribute target)
-        {
-            return ctx.AllContributionsFor(target)
-                .Where(c => ctx.IsAttributeContributing(c.Source))
-                .ToList();
-        }
-
-        public static ICollection<AttributeContribution> ContributionsBy(this ICalculationContext ctx, Attribute source)
-        {
-            return ctx.AllContributionsBy(source)
-                .Where(c => ctx.IsAttributeContributing(c.Target))
-                .ToList();
-        }
-
-        public static ICollection<AttributeContribution> ContributionsFor(this ICalculationContext ctx, int targetId)
-        {
-            return ctx.AllContributionsFor(targetId)
-                .Where(c => ctx.IsAttributeContributing(c.Source))
-                .ToList();
-        }
-
-        public static ICollection<AttributeContribution> ContributionsBy(this ICalculationContext ctx, int sourceId)
-        {
-            return ctx.AllContributionsBy(sourceId)
-                .Where(c => ctx.IsAttributeContributing(c.Target))
-                .ToList();
-        }
-    }
-
     public class InMemoryRules
     {
         #region Public Interface
 
-        public ICollection<AttributeContribution> ContributionsBy(Attribute source)
+        public ICollection<AttributeContribution> ContributionsFrom(Attribute source)
         {
             if (null == source)
                 throw new ArgumentNullException("source");
             return _contributionsByAttributeId[source.Id];
         }
 
-        public ICollection<AttributeContribution> ContributionsFor(Attribute target)
+        public ICollection<AttributeContribution> ContributionsTo(Attribute target)
         {
             if (null == target)
                 throw new ArgumentNullException("target");
             return _contributionsForAttributeId[target.Id];
         }
 
-        public ICollection<AttributeContribution> ContributionsBy(int sourceId)
+        public ICollection<AttributeContribution> ContributionsFrom(int sourceId)
         {
             return _contributionsByAttributeId[sourceId];
         }
 
-        public ICollection<AttributeContribution> ContributionsFor(int targetId)
+        public ICollection<AttributeContribution> ContributionsTo(int targetId)
         {
             return _contributionsForAttributeId[targetId];
         }
@@ -80,17 +39,15 @@ namespace Model.Calculations
             return _attributes[AttributeKey(name, category)];
         }
 
+        public IEnumerable<Attribute> Attributes { get { return _attributes.Values; } }
+
         public void AddContribution(AttributeContribution contrib)
         {
-            GetContributionsByAttribute(contrib.Source).Add(contrib);
+            if (null == contrib.Target)
+                throw new Exception("attribute contribution target cannot be null");
+            if (null != contrib.Source)
+                GetContributionsByAttribute(contrib.Source).Add(contrib);
             GetContributionsForAttribute(contrib.Target).Add(contrib);
-        }
-
-        public Attribute CreateAttribute(string name, string category, bool isStandard)
-        {
-            var attrib = new Attribute { Id = AllocId(), Name = name, Category = category, IsStandard = isStandard };
-            AddAttribute(attrib);
-            return attrib;
         }
 
         public void AddAttribute(Attribute attrib)
@@ -140,9 +97,6 @@ namespace Model.Calculations
             }
             return contribs;
         }
-
-        int _nextId = 1;
-        int AllocId() { return _nextId++; }
 
         IDictionary<string, Attribute> _attributes = new Dictionary<string, Attribute>();
         IDictionary<int, IList<AttributeContribution>> _contributionsByAttributeId = new Dictionary<int, IList<AttributeContribution>>();

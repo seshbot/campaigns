@@ -1,40 +1,87 @@
-﻿using campaigns.Models.DAL;
-using Model.Calculations;
+﻿using Campaigns.Core.Data;
+using Campaigns.Models.DAL;
+using Services.Calculation;
+using Services.Rules;
+using Services.Rules.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Models
+namespace Campaigns.Models
 {
     public interface ICharacterSheetService
     {
-        CharacterSheet CreateCharacterSheet();
-        CharacterSheet EnsureValid(CharacterSheet characterSheet);
-        CharacterSheet AddStandardAttributesTo(CharacterSheet characterSheet);
-        CharacterSheet AddCalculatedStatisticsTo(CharacterSheet characterSheet);
+        DAL.CharacterSheet CreateCharacterSheet();
+        DAL.CharacterSheet EnsureValid(DAL.CharacterSheet characterSheet);
+        DAL.CharacterSheet AddStandardAttributesTo(DAL.CharacterSheet characterSheet);
+        DAL.CharacterSheet AddCalculatedStatisticsTo(DAL.CharacterSheet characterSheet);
     }
 
     public class CharacterSheetService : ICharacterSheetService
     {
         CharacterSheetDbContext _db;
         private RulesDbContext _rulesDb = new RulesDbContext();
-        private ICalculationService _calcService = new CalculationService();
+
+        private EFEntityRepository<Services.Calculation.Attribute> _attributesDb;
+        private EFEntityRepository<Services.Calculation.AttributeContribution> _contributionsDb;
+
+        private RulesService _rules;
+
+        //AttributeValue ToAttribValue(AbilityValueCalculation calc)
+        //{
+        //    return new AttributeValue
+        //    {
+        //        Attribute = _rulesDb.GetAttribute(calc.Allocation.Ability.ShortName, "abilities"),
+        //        Contributions = new List<AttributeContribution>(),
+        //        Value = calc.Value,
+        //    };
+        //}
+
+        //AttributeValue ToAttribValue(SkillValueCalculation calc)
+        //{
+        //    return new AttributeValue
+        //    {
+        //        Attribute = _rulesDb.GetAttribute(calc.Allocation.Skill.Name, "skills"),
+        //        Contributions = new List<AttributeContribution>(),
+        //        Value = calc.Value,
+        //    };
+        //}
+
+        //public DAL.Experimental.CharacterSheet ToExperimental(DAL.CharacterSheet characterSheet)
+        //{
+        //    var derivedAbilityAttribs = characterSheet.DerivedStatistics.Abilities
+        //        .Select(ToAttribValue);
+        //    var derivedSkillAttribs = characterSheet.DerivedStatistics.Skills
+        //        .Select(ToAttribValue);
+
+        //    return new Models.DAL.Experimental.CharacterSheet
+        //    {
+        //        Name = characterSheet.Description.Name,
+        //        Description = characterSheet.Description.Text,
+        //        AttributeValues = derivedAbilityAttribs.Concat(derivedSkillAttribs).ToList(),
+        //    };
+        //}
 
         public CharacterSheetService(CharacterSheetDbContext db)
         {
             _db = db;
-        }
 
-        public CharacterSheet CreateCharacterSheet()
+            _attributesDb = new EFEntityRepository<Services.Calculation.Attribute>(_rulesDb, _rulesDb.Attributes);
+            _contributionsDb = new EFEntityRepository<Services.Calculation.AttributeContribution>(_rulesDb, _rulesDb.AttributeContributions);
+
+            _rules = new RulesService(_attributesDb, _contributionsDb);
+    }
+
+        public DAL.CharacterSheet CreateCharacterSheet()
         {
-            var characterSheet = new CharacterSheet();
+            var characterSheet = new DAL.CharacterSheet();
             AddStandardAttributesTo(characterSheet);
             return characterSheet;
         }
 
-        public CharacterSheet EnsureValid(CharacterSheet characterSheet)
+        public DAL.CharacterSheet EnsureValid(DAL.CharacterSheet characterSheet)
         {
             characterSheet.Description = characterSheet.Description ?? new CharacterDescription
             {
@@ -52,7 +99,7 @@ namespace campaigns.Models
             return characterSheet;
         }
 
-        public CharacterSheet AddStandardAttributesTo(CharacterSheet characterSheet)
+        public DAL.CharacterSheet AddStandardAttributesTo(DAL.CharacterSheet characterSheet)
         {
             var existingAbilityIds = new HashSet<int>(characterSheet.AbilityAllocations?.Select(a => a.AbilityId) ?? new int[] { });
             var existingSkillIds = new HashSet<int>(characterSheet.SkillAllocations?.Select(a => a.SkillId) ?? new int[] { });
@@ -96,19 +143,35 @@ namespace campaigns.Models
             return characterSheet;
         }
 
-        public CharacterSheet AddCalculatedStatisticsTo(CharacterSheet characterSheet)
+        private Services.Calculation.Attribute GetAttribute(Ability ability)
         {
-            var calculationContext = new RulesCalculationContext(_rulesDb, characterSheet);
-            var calculatedResults = _calcService.Calculate(calculationContext);
+            return _attributesDb.EntityTable.First(a =>
+                0 == string.Compare(a.Name, ability.ShortName, true) &&
+                0 == string.Compare(a.Category, "abilities", true));
+        }
+
+        public DAL.CharacterSheet AddCalculatedStatisticsTo(DAL.CharacterSheet characterSheet)
+        {
+            var characterContributions =
+                from alloc in characterSheet.AbilityAllocations
+                let attribute = GetAttribute(alloc.Ability)
+                select attribute.ConstantContributionFrom(null, alloc.Points);
+
+            var characterSheetImpl = _rules.CreateCharacterSheet(new CharacterSpecification
+            {
+                Allocations = characterContributions,
+            });
 
             //
             // calculated abilities
             //
-
-            var abilityAttribValuesByName = calculatedResults.AttributeValuesForCategory("abilities")
+            
+            var abilityAttribValuesByName = characterSheetImpl.AttributeValues
+                .Where(val => 0 == string.Compare(val.Attribute.Category, "abilities"))
                 .ToDictionary(val => val.Attribute.Name.ToLower());
-
-            var abilityModAttribValuesByName = calculatedResults.AttributeValuesForCategory("ability-modifiers")
+            
+            var abilityModAttribValuesByName = characterSheetImpl.AttributeValues
+                .Where(val => 0 == string.Compare(val.Attribute.Category, "ability-modifiers"))
                 .ToDictionary(val => val.Attribute.Name.ToLower());
 
             var abilityCalculations =
@@ -124,8 +187,9 @@ namespace campaigns.Models
             //
             // calculated skills
             //
-
-            var skillAttribValuesByName = calculatedResults.AttributeValuesForCategory("skills")
+            
+            var skillAttribValuesByName = characterSheetImpl.AttributeValues
+                .Where(val => 0 == string.Compare(val.Attribute.Category, "skills"))
                 .ToDictionary(val => val.Attribute.Name.ToLower());
 
             var skillCalculations =

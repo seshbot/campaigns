@@ -1,4 +1,4 @@
-﻿using campaigns.Helpers;
+﻿using Campaigns.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace campaigns.Models.DAL
+namespace Campaigns.Models.DAL
 {
     // TODO: LevelDescriptor (spell slots etc) | <- Class and | <- Race?
     // TODO: derived/composite properties use [DatabaseGenerated(DatabaseGeneratedOption.None)]

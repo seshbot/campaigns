@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
-namespace campaigns.Helpers
+namespace Campaigns.Helpers
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class AllowSafeHtmlAttribute : ValidationAttribute, IMetadataAware

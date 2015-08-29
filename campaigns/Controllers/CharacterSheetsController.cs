@@ -6,13 +6,14 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using campaigns.Models;
-using campaigns.Helpers;
-using campaigns.Models.DTO;
-using Model.Calculations;
-using campaigns.Models.DAL;
+using Campaigns.Models;
+using Campaigns.Helpers;
+using Campaigns.Models.DTO;
+using Services.Calculation;
+using Campaigns.Models.DAL;
+using System.Linq.Expressions;
 
-namespace campaigns.Controllers
+namespace Campaigns.Controllers
 {
     public class CharacterSheetsController : Controller
     {
@@ -39,6 +40,28 @@ namespace campaigns.Controllers
             return View(characterSheetsWithDerivedInfo);
         }
 
+        //Expression<Func<AttributeValue, AttributeViewModel<int>>> ToAttributeViewModel = a => new AttributeViewModel<int>
+        //{
+        //    AttributeId = a.Attribute.Id,
+        //    IsSet = true,
+        //    Name = a.Attribute.LongName,
+        //    ShortName = a.Attribute.Name,
+        //    Value = a.Value
+        //};
+        //Expression<Func<CharacterSheet, CharacterSheetViewModel>> ToViewModel = c => new CharacterSheetViewModel
+        //{
+        //    Mode = Mode.View,
+        //    Name = c.Description.Name,
+        //    ShortDescription = c.Description.ShortText,
+        //    Description = c.Description.Text,
+        //    Xp = c.Experience,
+        //    Level = c.Level,
+        //    Race = ,
+        //    Class = ,
+        //    ProficiencyBonus = ,
+        //    Abilities = c.AbilityAllocations.Select(ToAttributeViewModel),
+        //};
+
         // GET: CharacterSheets/Details/5
         public ActionResult Details(int? id)
         {
@@ -51,6 +74,7 @@ namespace campaigns.Controllers
             {
                 return HttpNotFound();
             }
+
             return View(_service.AddCalculatedStatisticsTo(characterSheet));
         }
 
@@ -91,8 +115,14 @@ namespace campaigns.Controllers
             {
                 ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
             }
-            
-            return View(_service.AddCalculatedStatisticsTo(characterSheet));
+
+            characterSheet = _service.AddCalculatedStatisticsTo(characterSheet);
+
+            //var characterSheetEx = ToExperimental(characterSheet);
+            //_charDb.CharacterSheetsEx.Add(characterSheetEx);
+            //_charDb.SaveChanges();
+
+            return View(characterSheet);
         }
 
         // GET: CharacterSheets/Edit/5

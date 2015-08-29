@@ -1,11 +1,11 @@
-﻿using campaigns.Models.DAL;
+﻿using Campaigns.Models.DAL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Models.DnD5
+namespace Campaigns.Models.DnD5
 {
     public class RaceInfo
     {

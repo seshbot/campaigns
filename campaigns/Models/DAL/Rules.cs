@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Models.DAL
+namespace Campaigns.Models.DAL
 {
     public class Ability
     {

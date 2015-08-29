@@ -6,8 +6,8 @@
     <ProjectGuid>{30C3BE6A-7141-44B0-813E-3995CEFF185A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Model.Calculations.Tests</RootNamespace>
-    <AssemblyName>Model.Calculations.Tests</AssemblyName>
+    <RootNamespace>Services.Calculation.Tests</RootNamespace>
+    <AssemblyName>Services.Calculation.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -58,9 +58,17 @@
     <Compile Include="TestContext.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Model.Calculations\Model.Calculations.csproj">
+    <ProjectReference Include="..\..\Campaigns.Core\Campaigns.Core.csproj">
+      <Project>{126b9575-c062-4b4e-982c-6686328eda82}</Project>
+      <Name>Campaigns.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Services.Calculation\Services.Calculation.csproj">
       <Project>{2ee9ecd1-b698-4697-a889-50128a885754}</Project>
-      <Name>Model.Calculations</Name>
+      <Name>Services.Calculation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Services.Rules\Services.Rules.csproj">
+      <Project>{433a3aa7-7daf-41f8-b925-7d0d98939a7c}</Project>
+      <Name>Services.Rules</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

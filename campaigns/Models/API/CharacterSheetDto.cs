@@ -1,8 +1,8 @@
-﻿using campaigns.Helpers;
+﻿using Campaigns.Helpers;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace campaigns.Models.DTO
+namespace Campaigns.Models.DTO
 {
     public class AbilityAllocationDTO
     {

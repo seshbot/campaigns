@@ -4,18 +4,18 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 
-namespace Model.Calculations.Tests
+namespace Services.Calculation.Tests
 {
     [TestClass]
     public class CalculationServiceTests
     {
-        TestContext context;
+        TestRules context;
         CalculationService service;
 
         [TestInitialize]
         public void TestInit()
         {
-            context = new TestContext();
+            context = new TestRules();
             service = new CalculationService();
         }
 

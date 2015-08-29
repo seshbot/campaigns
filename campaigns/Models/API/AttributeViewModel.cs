@@ -1,15 +1,15 @@
-﻿using Model.Calculations;
+﻿using Services.Calculation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace campaigns.Models.API
+namespace Campaigns.Models.API
 {
     public class AttributeViewModel
     {
-        public Model.Calculations.Attribute Attribute { get; set; }
+        public Services.Calculation.Attribute Attribute { get; set; }
         public IEnumerable<AttributeContribution> ContributesTo { get; set; }
         public IEnumerable<AttributeContribution> ContributedToBy { get; set; }
     }

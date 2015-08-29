@@ -4,7 +4,7 @@
 using Glimpse.AspNet.Extensions;
 using Glimpse.Core.Extensibility;
 
-namespace campaigns
+namespace Campaigns
 {
     public class GlimpseSecurityPolicy:IRuntimePolicy
     {

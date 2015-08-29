@@ -1,4 +1,4 @@
-﻿using campaigns.Models;
+﻿using Campaigns.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +8,13 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 
-namespace campaigns
+namespace Campaigns
 {
     public class MvcApplication : System.Web.HttpApplication
     {
         protected void Application_Start()
         {
+            System.Data.Entity.Database.SetInitializer(new Services.Rules.Data.DataContextInitializer());
             System.Data.Entity.Database.SetInitializer(new CharacterSheetInitializer());
 
             AreaRegistration.RegisterAllAreas();

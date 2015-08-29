@@ -13,8 +13,8 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>campaigns</RootNamespace>
-    <AssemblyName>campaigns</AssemblyName>
+    <RootNamespace>Campaigns</RootNamespace>
+    <AssemblyName>Campaigns</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
@@ -201,6 +201,7 @@
     <Compile Include="Controllers\Api\Rules\RulesV2Controller.cs" />
     <Compile Include="Controllers\CharacterSheetsController.cs" />
     <Compile Include="Controllers\Api\Rules\RulesV1Controllers.cs" />
+    <Compile Include="Models\CharacterSheetViewModels.cs" />
     <Compile Include="GlimpseSecurityPolicy.cs" />
     <Compile Include="Helpers\DataHelpers.cs" />
     <Compile Include="Helpers\HtmlHelpers.cs" />
@@ -224,7 +225,6 @@
     <Compile Include="Models\DnD5\RulesDescription.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
-    <Compile Include="Models\RulesDbContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -312,9 +312,17 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Model.Calculations\Model.Calculations.csproj">
+    <ProjectReference Include="..\Campaigns.Core\Campaigns.Core.csproj">
+      <Project>{126b9575-c062-4b4e-982c-6686328eda82}</Project>
+      <Name>Campaigns.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services.Calculation\Services.Calculation.csproj">
       <Project>{2ee9ecd1-b698-4697-a889-50128a885754}</Project>
-      <Name>Model.Calculations</Name>
+      <Name>Services.Calculation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Services.Rules\Services.Rules.csproj">
+      <Project>{433a3aa7-7daf-41f8-b925-7d0d98939a7c}</Project>
+      <Name>Services.Rules</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
