@@ -76,20 +76,20 @@ namespace Services.Calculation.Tests
 
     static class CalculationResultHelper
     {
-        public static void AssertAttribValue(this CalculationResult result, Attribute attrib, int value)
+        public static void AssertAttribValue(this CalculationResult result, Campaigns.Model.Attribute attrib, int value)
         {
             var values = result.AttributeValues.Where(val => val.Attribute == attrib);
             Assert.IsTrue(values.Count() == 1);
             Assert.AreEqual(value, values.First().Value);
         }
 
-        public static void AssertNoAttrib(this CalculationResult result, Attribute attrib)
+        public static void AssertNoAttrib(this CalculationResult result, Campaigns.Model.Attribute attrib)
         {
             var count = result.AttributeValues.Count(val => val.Attribute == attrib);
             Assert.AreEqual(0, count);
         }
 
-        public static void AssertAttribContributionFrom(this CalculationResult result, Attribute attrib, Attribute contributingAttrib)
+        public static void AssertAttribContributionFrom(this CalculationResult result, Campaigns.Model.Attribute attrib, Campaigns.Model.Attribute contributingAttrib)
         {
             var values = result.AttributeValues.Where(val => val.Attribute == attrib);
             Assert.IsTrue(values.Count() == 1);

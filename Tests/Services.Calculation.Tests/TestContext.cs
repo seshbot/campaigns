@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Services.Rules.Data;
+using Campaigns.Model;
 
 namespace Services.Calculation.Tests
 {
@@ -17,7 +18,7 @@ namespace Services.Calculation.Tests
     /// </summary>
     class TestRules : ICalculationRules
     {
-        public void SetInitialValue(Attribute attribute, int value)
+        public void SetInitialValue(Campaigns.Model.Attribute attribute, int value)
         {
             _contributionsDb.Add(attribute.ConstantContributionFrom(null, value));
             _contributingAttributes.Add(attribute);
@@ -33,42 +34,42 @@ namespace Services.Calculation.Tests
             return AllContributionsFrom(_attributesDb.GetById(sourceId));
         }
 
-        public IEnumerable<AttributeContribution> AllContributionsFrom(Attribute source)
+        public IEnumerable<AttributeContribution> AllContributionsFrom(Campaigns.Model.Attribute source)
         {
             return _contributionsDb.ContributionsFrom(source);
         }
 
-        public IEnumerable<AttributeContribution> AllContributionsTo(Attribute target)
+        public IEnumerable<AttributeContribution> AllContributionsTo(Campaigns.Model.Attribute target)
         {
             return _contributionsDb.ContributionsTo(target);
         }
 
-        private Attribute CreateAttribute(string name, string category, bool isStandard)
+        private Campaigns.Model.Attribute CreateAttribute(string name, string category, bool isStandard)
         {
-            var result = new Attribute { Name = name, Category = category, IsStandard = isStandard };
+            var result = new Campaigns.Model.Attribute { Name = name, Category = category, IsStandard = isStandard };
             _attributesDb.Add(result);
             return result;
         }
 
         public TestRules()
         {
-            _attributesDb = new InMemoryEntityRepository<Attribute>();
+            _attributesDb = new InMemoryEntityRepository<Campaigns.Model.Attribute>();
             _contributionsDb = new InMemoryEntityRepository<AttributeContribution>();
             _contributionsDb.AddForeignStore(_attributesDb);
 
-            _contributingAttributes = new HashSet<Attribute>();
+            _contributingAttributes = new HashSet<Campaigns.Model.Attribute>();
 
             //
             // create attributes
             //
 
-            _races = new Dictionary<string, Attribute>
+            _races = new Dictionary<string, Campaigns.Model.Attribute>
             {
                 { "human", CreateAttribute("human", "races", isStandard: false) },
                 { "gnome", CreateAttribute("gnome", "races", isStandard: false) }
             };
 
-            _abilities = new Dictionary<string, Attribute>
+            _abilities = new Dictionary<string, Campaigns.Model.Attribute>
             {
                 { "str", CreateAttribute("str", "abilities", isStandard: true) },
                 { "int", CreateAttribute("int", "abilities", isStandard: true) }
@@ -79,7 +80,7 @@ namespace Services.Calculation.Tests
                 .Select(attrib => CreateAttribute(attrib.Name, "ability-modifiers", isStandard: true))
                 .ToDictionary(m => m.Name);
 
-            _skills = new Dictionary<string, Attribute>
+            _skills = new Dictionary<string, Campaigns.Model.Attribute>
             {
                 { "athletics", CreateAttribute("athletics", "skills", isStandard: true) },
                 { "arcana", CreateAttribute("arcana", "skills", isStandard: true) }
@@ -111,33 +112,33 @@ namespace Services.Calculation.Tests
             _contributionsDb.Add(_skills["arcana"].CopyContributionFrom(_abilityMods["int"]));
         }
 
-        private InMemoryEntityRepository<Attribute> _attributesDb;
+        private InMemoryEntityRepository<Campaigns.Model.Attribute> _attributesDb;
         private InMemoryEntityRepository<AttributeContribution> _contributionsDb;
 
-        private IDictionary<string, Attribute> _races;
-        private IDictionary<string, Attribute> _abilities;
-        private IDictionary<string, Attribute> _abilityMods;
-        private IDictionary<string, Attribute> _skills;
+        private IDictionary<string, Campaigns.Model.Attribute> _races;
+        private IDictionary<string, Campaigns.Model.Attribute> _abilities;
+        private IDictionary<string, Campaigns.Model.Attribute> _abilityMods;
+        private IDictionary<string, Campaigns.Model.Attribute> _skills;
 
-        public IEnumerable<Attribute> Races { get { return _races.Values; } }
-        public IEnumerable<Attribute> Abilities { get { return _abilities.Values; } }
-        public IEnumerable<Attribute> AbilityMods { get { return _abilityMods.Values; } }
-        public IEnumerable<Attribute> Skills { get { return _skills.Values; } }
+        public IEnumerable<Campaigns.Model.Attribute> Races { get { return _races.Values; } }
+        public IEnumerable<Campaigns.Model.Attribute> Abilities { get { return _abilities.Values; } }
+        public IEnumerable<Campaigns.Model.Attribute> AbilityMods { get { return _abilityMods.Values; } }
+        public IEnumerable<Campaigns.Model.Attribute> Skills { get { return _skills.Values; } }
 
-        private IEnumerable<Attribute> AllAttributes { get { return Abilities.Concat(AbilityMods).Concat(Races).Concat(Skills); } }
+        private IEnumerable<Campaigns.Model.Attribute> AllAttributes { get { return Abilities.Concat(AbilityMods).Concat(Races).Concat(Skills); } }
 
-        public Attribute Race(string name) { return _races[name]; }
-        public Attribute Ability(string name) { return _abilities[name]; }
-        public Attribute AbilityMod(string name) { return _abilityMods[name]; }
-        public Attribute Skill(string name) { return _skills[name]; }
+        public Campaigns.Model.Attribute Race(string name) { return _races[name]; }
+        public Campaigns.Model.Attribute Ability(string name) { return _abilities[name]; }
+        public Campaigns.Model.Attribute AbilityMod(string name) { return _abilityMods[name]; }
+        public Campaigns.Model.Attribute Skill(string name) { return _skills[name]; }
 
-        private ISet<Attribute> _contributingAttributes;
+        private ISet<Campaigns.Model.Attribute> _contributingAttributes;
         
-        public bool IsAttributeContributing(Attribute source)
+        public bool IsAttributeContributing(Campaigns.Model.Attribute source)
         {
             return _contributingAttributes.Contains(source);
         }
 
-        public IEnumerable<Attribute> ContributingAttributes { get { return _contributingAttributes; } }
+        public IEnumerable<Campaigns.Model.Attribute> ContributingAttributes { get { return _contributingAttributes; } }
     }
 }

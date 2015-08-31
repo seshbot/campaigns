@@ -44,6 +44,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=4.0.4.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.4.0.4\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Glimpse.Ado, Version=1.7.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Glimpse.Ado.1.7.3\lib\net45\Glimpse.Ado.dll</HintPath>
       <Private>True</Private>
@@ -69,6 +73,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -132,9 +140,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http.Formatting">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
@@ -201,17 +206,14 @@
     <Compile Include="Controllers\Api\Rules\RulesV2Controller.cs" />
     <Compile Include="Controllers\CharacterSheetsController.cs" />
     <Compile Include="Controllers\Api\Rules\RulesV1Controllers.cs" />
-    <Compile Include="Models\CharacterSheetViewModels.cs" />
     <Compile Include="GlimpseSecurityPolicy.cs" />
     <Compile Include="Helpers\DataHelpers.cs" />
     <Compile Include="Helpers\HtmlHelpers.cs" />
     <Compile Include="Models\API\AttributeViewModel.cs" />
-    <Compile Include="Models\API\ViewModelHelpers.cs" />
     <Compile Include="Models\DnD5\LevelInfo.cs" />
     <Compile Include="Models\DnD5\RaceInfo.cs" />
-    <Compile Include="Models\API\DtoHelper.cs" />
     <Compile Include="Models\DAL\Rules.cs" />
-    <Compile Include="Models\API\CharacterSheetDto.cs" />
+    <Compile Include="Models\API\CharacterSheetViewModel.cs" />
     <Compile Include="Models\DAL\CharacterSheet.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
@@ -299,6 +301,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Models\CharacterSheet\Edit\" />
+    <Folder Include="Models\CharacterSheet\View\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
@@ -315,6 +319,10 @@
     <ProjectReference Include="..\Campaigns.Core\Campaigns.Core.csproj">
       <Project>{126b9575-c062-4b4e-982c-6686328eda82}</Project>
       <Name>Campaigns.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Campaigns.Model\Campaigns.Model.csproj">
+      <Project>{292bcf9d-5494-4119-95d1-fa9140ae05ff}</Project>
+      <Name>Campaigns.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\Services.Calculation\Services.Calculation.csproj">
       <Project>{2ee9ecd1-b698-4697-a889-50128a885754}</Project>

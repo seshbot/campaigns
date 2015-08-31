@@ -58,6 +58,10 @@
       <Project>{126b9575-c062-4b4e-982c-6686328eda82}</Project>
       <Name>Campaigns.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Campaigns.Model\Campaigns.Model.csproj">
+      <Project>{292bcf9d-5494-4119-95d1-fa9140ae05ff}</Project>
+      <Name>Campaigns.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Services.Calculation\Services.Calculation.csproj">
       <Project>{2ee9ecd1-b698-4697-a889-50128a885754}</Project>
       <Name>Services.Calculation</Name>

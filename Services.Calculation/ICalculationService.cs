@@ -1,4 +1,5 @@
-﻿using Serialize.Linq.Serializers;
+﻿using Campaigns.Model;
+using Serialize.Linq.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +54,7 @@ namespace Services.Calculation
             return dependencies;
         }
 
-        private IEnumerable<AttributeContribution> GetPendingContributionsTo(Services.Calculation.Attribute target)
+        private IEnumerable<AttributeContribution> GetPendingContributionsTo(Campaigns.Model.Attribute target)
         {
             return from contrib in _context.AllContributionsTo(target)
                    let dependency = contrib.Source
@@ -63,7 +64,7 @@ namespace Services.Calculation
                    select contrib;
         }
 
-        private IEnumerable<AttributeContribution> GetDirectContributionsTo(Services.Calculation.Attribute target)
+        private IEnumerable<AttributeContribution> GetDirectContributionsTo(Campaigns.Model.Attribute target)
         {
             return _context.AllContributionsTo(target)
                 .Where(c => null == c.Source);
@@ -85,7 +86,7 @@ namespace Services.Calculation
             _pendingAttributeDependencies.Add(target.Id, new HashSet<int>(targetDependencyIds));
         }
 
-        private AttributeValue GetOrAddPendingValue(Attribute target)
+        private AttributeValue GetOrAddPendingValue(Campaigns.Model.Attribute target)
         {
             AttributeValue result;
             if (!_pendingValues.TryGetValue(target.Id, out result))
@@ -111,7 +112,7 @@ namespace Services.Calculation
             value.Contributions.Add(contribution);
         }
 
-        private IList<Attribute> GetPreparedAttributes()
+        private IList<Campaigns.Model.Attribute> GetPreparedAttributes()
         {
             return (
                 from kvp in _pendingAttributeDependencies
@@ -122,7 +123,7 @@ namespace Services.Calculation
             ).ToList();
         }
 
-        private int CompletePendingCalculation(Attribute target)
+        private int CompletePendingCalculation(Campaigns.Model.Attribute target)
         {
             var value = GetOrAddPendingValue(target);
             if (null != value.Contributions)

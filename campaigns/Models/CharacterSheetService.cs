@@ -1,4 +1,6 @@
 ﻿using Campaigns.Core.Data;
+using Campaigns.Model;
+using Campaigns.Model.Data;
 using Campaigns.Models.DAL;
 using Services.Calculation;
 using Services.Rules;
@@ -22,12 +24,14 @@ namespace Campaigns.Models
     public class CharacterSheetService : ICharacterSheetService
     {
         CharacterSheetDbContext _db;
-        private RulesDbContext _rulesDb = new RulesDbContext();
+        private CampaignsDbContext _dbContext = new CampaignsDbContext();
+        //private Services.Rules.Data.CharacterSheetDbContext _sheetsContext = new Services.Rules.Data.CharacterSheetDbContext();
 
-        private EFEntityRepository<Services.Calculation.Attribute> _attributesDb;
-        private EFEntityRepository<Services.Calculation.AttributeContribution> _contributionsDb;
+        private EFEntityRepository<Campaigns.Model.Attribute> _attributesDb;
+        private EFEntityRepository<Campaigns.Model.AttributeContribution> _contributionsDb;
+        private EFEntityRepository<Campaigns.Model.CharacterSheet> _sheetsDb;
 
-        private RulesService _rules;
+        private IRulesService _rules;
 
         //AttributeValue ToAttribValue(AbilityValueCalculation calc)
         //{
@@ -68,10 +72,11 @@ namespace Campaigns.Models
         {
             _db = db;
 
-            _attributesDb = new EFEntityRepository<Services.Calculation.Attribute>(_rulesDb, _rulesDb.Attributes);
-            _contributionsDb = new EFEntityRepository<Services.Calculation.AttributeContribution>(_rulesDb, _rulesDb.AttributeContributions);
+            _attributesDb = new EFEntityRepository<Campaigns.Model.Attribute>(_dbContext, _dbContext.Attributes);
+            _contributionsDb = new EFEntityRepository<Campaigns.Model.AttributeContribution>(_dbContext, _dbContext.AttributeContributions);
+            _sheetsDb = new EFEntityRepository<Campaigns.Model.CharacterSheet>(_dbContext, _dbContext.CharacterSheets);
 
-            _rules = new RulesService(_attributesDb, _contributionsDb);
+            _rules = new RulesService(_attributesDb, _contributionsDb, _sheetsDb);
     }
 
         public DAL.CharacterSheet CreateCharacterSheet()
@@ -90,8 +95,8 @@ namespace Campaigns.Models
             };
 
             // TODO: this shouldnt reference the rules directly
-            var levelInfo = DnD5.LevelInfo.FindBestFit(characterSheet.Experience, characterSheet.Level);
-            characterSheet.Experience = levelInfo.XP;
+            var levelInfo = DnD5.LevelInfo.FindBestFit(characterSheet.Xp, characterSheet.Level);
+            characterSheet.Xp = levelInfo.XP;
             characterSheet.Level = levelInfo.Level;
 
             AddStandardAttributesTo(characterSheet);
@@ -143,7 +148,7 @@ namespace Campaigns.Models
             return characterSheet;
         }
 
-        private Services.Calculation.Attribute GetAttribute(Ability ability)
+        private Campaigns.Model.Attribute GetAttribute(Ability ability)
         {
             return _attributesDb.EntityTable.First(a =>
                 0 == string.Compare(a.Name, ability.ShortName, true) &&
@@ -157,7 +162,7 @@ namespace Campaigns.Models
                 let attribute = GetAttribute(alloc.Ability)
                 select attribute.ConstantContributionFrom(null, alloc.Points);
 
-            var characterSheetImpl = _rules.CreateCharacterSheet(new CharacterSpecification
+            var characterSheetImpl = _rules.CreateCharacterSheet(new Campaigns.Model.CharacterSpecification
             {
                 Allocations = characterContributions,
             });

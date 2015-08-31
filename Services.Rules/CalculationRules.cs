@@ -1,4 +1,5 @@
 ﻿using Campaigns.Core.Data;
+using Campaigns.Model;
 using Services.Calculation;
 using Services.Rules.Data;
 using System;
@@ -13,23 +14,23 @@ namespace Services.Rules
     // TODO: get rid of this class, nothing a simple repository cant handle
     public class CalculationRules : ICalculationRules
     {
-        IEntityStore<Calculation.Attribute> _attributesDb;
+        IEntityStore<Campaigns.Model.Attribute> _attributesDb;
         IEntityStore<AttributeContribution> _contributionsDb;
 
         CharacterSpecification _calculationParams;
 
         InMemoryRules _memDb = new InMemoryRules();
 
-        Expression<Func<Calculation.Attribute, bool>> IsStandard = a => a.IsStandard;
+        Expression<Func<Campaigns.Model.Attribute, bool>> IsStandard = a => a.IsStandard;
 
-        Calculation.Attribute GetAttributeById(int id)
+        Campaigns.Model.Attribute GetAttributeById(int id)
         {
             return _attributesDb.GetById(id)
                 ?? _calculationParams.Attributes.FirstOrDefault(a => a.Id == id);
         }
 
         public CalculationRules(
-            IEntityStore<Calculation.Attribute> attributesDb,
+            IEntityStore<Campaigns.Model.Attribute> attributesDb,
             IEntityStore<AttributeContribution> contributionsDb)
             : this(attributesDb, contributionsDb, null)
         {
@@ -37,7 +38,7 @@ namespace Services.Rules
 
 
         public CalculationRules(
-            IEntityStore<Calculation.Attribute> attributesDb,
+            IEntityStore<Campaigns.Model.Attribute> attributesDb,
             IEntityStore<AttributeContribution> contributionsDb,
             CharacterSpecification calculationParams)
         {
@@ -79,7 +80,7 @@ namespace Services.Rules
             _memDb.AddContribution(contribution);
         }
 
-        public IEnumerable<Calculation.Attribute> ContributingAttributes { get { return _memDb.Attributes; } }
+        public IEnumerable<Campaigns.Model.Attribute> ContributingAttributes { get { return _memDb.Attributes; } }
 
         public IEnumerable<AttributeContribution> AllContributionsFrom(int sourceId)
         {
@@ -87,7 +88,7 @@ namespace Services.Rules
             return AllContributionsFrom(attrib);
         }
 
-        public IEnumerable<AttributeContribution> AllContributionsFrom(Calculation.Attribute source)
+        public IEnumerable<AttributeContribution> AllContributionsFrom(Campaigns.Model.Attribute source)
         {
             return _memDb.ContributionsFrom(source).Concat(_contributionsDb.ContributionsFrom(source));
         }
@@ -98,12 +99,12 @@ namespace Services.Rules
             return AllContributionsTo(attrib);
         }
 
-        public IEnumerable<AttributeContribution> AllContributionsTo(Calculation.Attribute target)
+        public IEnumerable<AttributeContribution> AllContributionsTo(Campaigns.Model.Attribute target)
         {
             return _memDb.ContributionsTo(target).Concat(_contributionsDb.ContributionsTo(target));
         }
 
-        public bool IsAttributeContributing(Calculation.Attribute source)
+        public bool IsAttributeContributing(Campaigns.Model.Attribute source)
         {
             return _memDb.Attributes.Any(a => a.Id == source.Id);
         }

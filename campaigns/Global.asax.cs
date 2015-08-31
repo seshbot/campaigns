@@ -14,7 +14,7 @@ namespace Campaigns
     {
         protected void Application_Start()
         {
-            System.Data.Entity.Database.SetInitializer(new Services.Rules.Data.DataContextInitializer());
+            System.Data.Entity.Database.SetInitializer(new Services.Rules.Data.CampaignsDbContextInitializer());
             System.Data.Entity.Database.SetInitializer(new CharacterSheetInitializer());
 
             AreaRegistration.RegisterAllAreas();

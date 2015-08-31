@@ -1,4 +1,6 @@
-﻿using Services.Calculation;
+﻿using Campaigns.Model;
+using Campaigns.Model.Data;
+using Services.Calculation;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -8,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Services.Rules.Data
 {
-    public class DataContextInitializer : DropCreateDatabaseIfModelChanges<RulesDbContext>
+    public class CampaignsDbContextInitializer : DropCreateDatabaseIfModelChanges<CampaignsDbContext>
     {
-        protected override void Seed(RulesDbContext context)
+        protected override void Seed(CampaignsDbContext context)
         {
             var dnd = new DnD5.RulesDescription();
 
@@ -19,23 +21,23 @@ namespace Services.Rules.Data
             //
 
             var races = dnd.Races
-                .Select(r => new Services.Calculation.Attribute { Category = "races", Name = r.Name, LongName = r.Name, IsStandard = false, Description = r.Description })
+                .Select(r => new Campaigns.Model.Attribute { Category = "races", Name = r.Name, LongName = r.Name, IsStandard = false, Description = r.Description })
                 .ToDictionary(r => r.Name.ToLower());
 
             var abilities = dnd.Abilities
-                .Select(a => new Services.Calculation.Attribute { Category = "abilities", Name = a.ShortName, LongName = a.Name, IsStandard = true, Description = a.Description, SortOrder = a.SortOrder })
+                .Select(a => new Campaigns.Model.Attribute { Category = "abilities", Name = a.ShortName, LongName = a.Name, IsStandard = true, Description = a.Description, SortOrder = a.SortOrder })
                 .ToDictionary(a => a.Name.ToLower());
 
             var abilityMods = dnd.Abilities
-                .Select(a => new Services.Calculation.Attribute { Category = "ability-modifiers", Name = a.ShortName, LongName = a.Name, IsStandard = true, Description = a.Description, SortOrder = a.SortOrder })
+                .Select(a => new Campaigns.Model.Attribute { Category = "ability-modifiers", Name = a.ShortName, LongName = a.Name, IsStandard = true, Description = a.Description, SortOrder = a.SortOrder })
                 .ToDictionary(a => a.Name.ToLower());
 
             var classes = dnd.Classes
-                .Select(c => new Services.Calculation.Attribute { Category = "classes", Name = c.Name, LongName = c.Name, IsStandard = false, Description = c.Description })
+                .Select(c => new Campaigns.Model.Attribute { Category = "classes", Name = c.Name, LongName = c.Name, IsStandard = false, Description = c.Description })
                 .ToDictionary(a => a.Name.ToLower());
 
             var skills = dnd.Skills
-                .Select(s => new Services.Calculation.Attribute { Category = "skills", Name = s.Name, LongName = s.Name, IsStandard = true, Description = s.Description })
+                .Select(s => new Campaigns.Model.Attribute { Category = "skills", Name = s.Name, LongName = s.Name, IsStandard = true, Description = s.Description })
                 .ToDictionary(a => a.Name.ToLower());
 
             context.Attributes.AddRange(races.Values);
@@ -54,7 +56,7 @@ namespace Services.Rules.Data
                 from ability in dnd.Abilities
                 let source = context.GetAttribute(ability.ShortName, "abilities")
                 let target = context.GetAttribute(ability.ShortName, "ability-modifiers")
-                select source.ContributionTo(target, val => val / 2 - 5);
+                select source.ContributionTo(target, ability => ability / 2 - 5);
 
             var skillContribs =
                 from skill in dnd.Skills

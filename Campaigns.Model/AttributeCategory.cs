@@ -1,17 +1,16 @@
 ﻿using Campaigns.Core;
-using Campaigns.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.Rules
+namespace Campaigns.Model
 {
-    public class CharacterArchetype : BaseEntity
+    public class AttributeCategory : BaseEntity
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public CharacterSpecification InitialAllocations { get; set; }
+        public bool AllowMultiple { get; set; }
     }
 }

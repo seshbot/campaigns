@@ -1,4 +1,5 @@
 ﻿using Campaigns.Core.Data;
+using Campaigns.Model;
 using Services.Calculation;
 using Services.Rules.Data;
 using System;
@@ -10,19 +11,22 @@ using System.Threading.Tasks;
 
 namespace Services.Rules
 {
-    public class RulesService
+    public class RulesService : IRulesService
     {
-        private IEntityStore<Calculation.Attribute> _attributesDb;
-        private IEntityStore<AttributeContribution> _contributionsDb;
+        private IEntityRepository<Campaigns.Model.Attribute> _attributesDb;
+        private IEntityRepository<Campaigns.Model.AttributeContribution> _contributionsDb;
+        private IEntityRepository<Campaigns.Model.CharacterSheet> _characterSheetsDb;
 
         private ICalculationService _calculationService;
 
         public RulesService(
-            IEntityStore<Calculation.Attribute> attributesDb,
-            IEntityStore<AttributeContribution> contributionsDb)
+            IEntityRepository<Campaigns.Model.Attribute> attributesDb,
+            IEntityRepository<Campaigns.Model.AttributeContribution> contributionsDb,
+            IEntityRepository<Campaigns.Model.CharacterSheet> characterSheetsDb)
         {
             _attributesDb = attributesDb;
             _contributionsDb = contributionsDb;
+            _characterSheetsDb = characterSheetsDb;
 
             //_characterSheetStore = characterSheetStore;
             _calculationService = new CalculationService();
@@ -45,6 +49,8 @@ namespace Services.Rules
                 Specification = specification,
                 AttributeValues = results.AttributeValues,
             };
+
+            _characterSheetsDb.Add(characterSheet);
 
             return characterSheet;
         }
@@ -168,7 +174,7 @@ namespace Services.Rules
             };
 
             validate(updated);
-
+            
             return updated;
         }
 
@@ -184,6 +190,8 @@ namespace Services.Rules
                 AttributeValues = results.AttributeValues,
             };
 
+            _characterSheetsDb.Add(characterSheet);
+
             return characterSheet;
         }
 
@@ -196,8 +204,8 @@ namespace Services.Rules
         //    };
 
         //    // TODO: this shouldnt reference the rules directly
-        //    var levelInfo = DnD5.LevelInfo.FindBestFit(characterSheet.Experience, characterSheet.Level);
-        //    characterSheet.Experience = levelInfo.XP;
+        //    var levelInfo = DnD5.LevelInfo.FindBestFit(characterSheet.Xp, characterSheet.Level);
+        //    characterSheet.Xp = levelInfo.XP;
         //    characterSheet.Level = levelInfo.Level;
 
         //    AddStandardAttributesTo(characterSheet);

@@ -7,9 +7,6 @@
         
     Controller.$inject = ['$scope', '$http', 'rules'];
     function Controller($scope, $http, rules) {
-        //console.log('test: ', test());
-        $scope.testThing = false;
-        $scope.toggleTest = function () { $scope.testThing = !$scope.testThing; };
         $scope.loaded = false;
         $scope.errorMessage = '';
         $scope.errorMessageDetail = '';

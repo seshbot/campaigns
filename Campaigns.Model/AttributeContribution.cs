@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.Calculation
+namespace Campaigns.Model
 {
     public class AttributeContribution : BaseEntity
     {
@@ -39,6 +39,12 @@ namespace Services.Calculation
                 var serializer = new ExpressionSerializer(new Serialize.Linq.Serializers.JsonSerializer());
                 FormulaJson = serializer.SerializeText(value);
             }
+            private get
+            {
+                var serializer = new ExpressionSerializer(new Serialize.Linq.Serializers.JsonSerializer());
+                var expression = (Expression<Func<int, int>>)serializer.DeserializeText(FormulaJson);
+                return expression;
+            }
         }
 
         private Func<int, int> _formula;
@@ -50,11 +56,22 @@ namespace Services.Calculation
             {
                 if (false || null == _formula)
                 {
-                    var serializer = new ExpressionSerializer(new Serialize.Linq.Serializers.JsonSerializer());
-                    var expression = (Expression<Func<int, int>>)serializer.DeserializeText(FormulaJson);
-                    _formula = expression.Compile();
+                    _formula = FormulaExpression.Compile();
                 }
                 return _formula;
+            }
+        }
+
+        private string _formulaString;
+        public string FormulaString
+        {
+            get
+            {
+                if (null == _formulaString)
+                {
+                    _formulaString = FormulaExpression.Body.ToString();
+                }
+                return _formulaString;
             }
         }
     }

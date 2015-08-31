@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Campaigns.Core.Testing;
 using Services.Calculation;
 using System.Collections.Generic;
+using Campaigns.Model;
 
 namespace Services.Rules.Tests
 {
@@ -16,29 +17,30 @@ namespace Services.Rules.Tests
     [TestClass]
     public class RulesServiceTests
     {
-        InMemoryEntityRepository<Services.Calculation.Attribute> _attributes;
-        InMemoryEntityRepository<Services.Calculation.AttributeContribution> _contributions;
+        InMemoryEntityRepository<Campaigns.Model.Attribute> _attributes;
+        InMemoryEntityRepository<Campaigns.Model.AttributeContribution> _contributions;
+        InMemoryEntityRepository<Campaigns.Model.CharacterSheet> _characterSheets;
 
         RulesService _rules;
         CharacterSpecification _gnomeAllocations;
         CharacterUpdate _superStrongUpdate;
 
-        private static Calculation.AttributeContribution Contrib(IEnumerable<Services.Calculation.AttributeContribution> contributions, string name, string category)
+        private static Campaigns.Model.AttributeContribution Contrib(IEnumerable<AttributeContribution> contributions, string name, string category)
         {
             return contributions?.FirstOrDefault(c => c.Target.Name == name && c.Target.Category == category);
         }
 
-        private static Calculation.AttributeValue AttribValue(IEnumerable<AttributeValue> vals, string name, string category)
+        private static Campaigns.Model.AttributeValue AttribValue(IEnumerable<AttributeValue> vals, string name, string category)
         {
             return vals.First(val => val.Attribute.Name == name && val.Attribute.Category == category);
         }
 
-        private static Calculation.Attribute Attrib(IEnumerable<Services.Calculation.Attribute> attributes, string name, string category)
+        private static Campaigns.Model.Attribute Attrib(IEnumerable<Campaigns.Model.Attribute> attributes, string name, string category)
         {
             return attributes?.FirstOrDefault(a => a.Name == name && a.Category == category);
         }
 
-        private Calculation.Attribute Attrib(string name, string category)
+        private Campaigns.Model.Attribute Attrib(string name, string category)
         {
             return Attrib(_attributes.EntityTable, name, category);
         }
@@ -46,18 +48,20 @@ namespace Services.Rules.Tests
         [TestInitialize]
         public void TestInit()
         {
-            _attributes = new InMemoryEntityRepository<Services.Calculation.Attribute>();
-            _contributions = new InMemoryEntityRepository<Services.Calculation.AttributeContribution>();
+            _attributes = new InMemoryEntityRepository<Campaigns.Model.Attribute>();
+            _contributions = new InMemoryEntityRepository<Campaigns.Model.AttributeContribution>();
             _contributions.AddForeignStore(_attributes);
+
+            _characterSheets = new InMemoryEntityRepository<Campaigns.Model.CharacterSheet>();
 
             _attributes.AddRange(new[]
             {
-                new Calculation.Attribute { Name = "human", Category = "race", IsStandard = false },
-                new Calculation.Attribute { Name = "gnome", Category = "race", IsStandard = false },
-                new Calculation.Attribute { Name = "str", Category = "abilities", IsStandard = true },
-                new Calculation.Attribute { Name = "int", Category = "abilities", IsStandard = true },
-                new Calculation.Attribute { Name = "str", Category = "ability-mods", IsStandard = true },
-                new Calculation.Attribute { Name = "int", Category = "ability-mods", IsStandard = true },
+                new Campaigns.Model.Attribute { Name = "human", Category = "race", IsStandard = false },
+                new Campaigns.Model.Attribute { Name = "gnome", Category = "race", IsStandard = false },
+                new Campaigns.Model.Attribute { Name = "str", Category = "abilities", IsStandard = true },
+                new Campaigns.Model.Attribute { Name = "int", Category = "abilities", IsStandard = true },
+                new Campaigns.Model.Attribute { Name = "str", Category = "ability-mods", IsStandard = true },
+                new Campaigns.Model.Attribute { Name = "int", Category = "ability-mods", IsStandard = true },
             });
 
             _contributions.AddRange(new[]
@@ -69,7 +73,8 @@ namespace Services.Rules.Tests
 
             _rules = new RulesService(
                 _attributes,
-                _contributions);
+                _contributions,
+                _characterSheets);
 
             _gnomeAllocations = new CharacterSpecification
             {

@@ -8,7 +8,6 @@ using System.Web;
 using System.Web.Mvc;
 using Campaigns.Models;
 using Campaigns.Helpers;
-using Campaigns.Models.DTO;
 using Services.Calculation;
 using Campaigns.Models.DAL;
 using System.Linq.Expressions;
@@ -39,29 +38,7 @@ namespace Campaigns.Controllers
 
             return View(characterSheetsWithDerivedInfo);
         }
-
-        //Expression<Func<AttributeValue, AttributeViewModel<int>>> ToAttributeViewModel = a => new AttributeViewModel<int>
-        //{
-        //    AttributeId = a.Attribute.Id,
-        //    IsSet = true,
-        //    Name = a.Attribute.LongName,
-        //    ShortName = a.Attribute.Name,
-        //    Value = a.Value
-        //};
-        //Expression<Func<CharacterSheet, CharacterSheetViewModel>> ToViewModel = c => new CharacterSheetViewModel
-        //{
-        //    Mode = Mode.View,
-        //    Name = c.Description.Name,
-        //    ShortDescription = c.Description.ShortText,
-        //    Description = c.Description.Text,
-        //    Xp = c.Experience,
-        //    Level = c.Level,
-        //    Race = ,
-        //    Class = ,
-        //    ProficiencyBonus = ,
-        //    Abilities = c.AbilityAllocations.Select(ToAttributeViewModel),
-        //};
-
+        
         // GET: CharacterSheets/Details/5
         public ActionResult Details(int? id)
         {

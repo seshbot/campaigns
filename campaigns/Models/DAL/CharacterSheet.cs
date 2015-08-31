@@ -98,7 +98,7 @@ namespace Campaigns.Models.DAL
         public virtual Class Class { get; set; }
         
         // statistics
-        public int? Experience { get; set; }
+        public int? Xp { get; set; }
         public int? Level { get; set; }
         public virtual IList<AbilityAllocation> AbilityAllocations { get; set; }
         public virtual IList<SkillAllocation> SkillAllocations { get; set; }

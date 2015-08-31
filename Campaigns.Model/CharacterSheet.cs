@@ -1,45 +1,34 @@
 ﻿using Campaigns.Core;
-using Services.Calculation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.Rules
+namespace Campaigns.Model
 {
     public class CharacterUpdate : BaseEntity
     {
-        public IEnumerable<Calculation.Attribute> AddedAttributes { get; set; }
-        public IEnumerable<Calculation.Attribute> RemovedAttributes { get; set; }
-        public IEnumerable<Calculation.AttributeContribution> AddedAllocations { get; set; }
-        public IEnumerable<Calculation.AttributeContribution> RemovedAllocations { get; set; }
+        public IEnumerable<Model.Attribute> AddedAttributes { get; set; }
+        public IEnumerable<Model.Attribute> RemovedAttributes { get; set; }
+        public IEnumerable<Model.AttributeContribution> AddedAllocations { get; set; }
+        public IEnumerable<Model.AttributeContribution> RemovedAllocations { get; set; }
     }
 
     public class CharacterSpecification : BaseEntity
     {
         public CharacterSpecification()
         {
-            Attributes = new List<Calculation.Attribute>();
-            Allocations = new List<Calculation.AttributeContribution>();
+            Attributes = new List<Model.Attribute>();
+            Allocations = new List<Model.AttributeContribution>();
         }
-        public IEnumerable<Calculation.Attribute> Attributes { get; set; }
-        public IEnumerable<Calculation.AttributeContribution> Allocations { get; set; } // TODO: find a better name
+        public IEnumerable<Model.Attribute> Attributes { get; set; }
+        public IEnumerable<Model.AttributeContribution> Allocations { get; set; } // TODO: find a better name
     }
 
     // TODO: create annotations to allow validation/attribute relationship constraints
     public class CharacterSheet : BaseEntity
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string ShortDescription
-        {
-            get
-            {
-                return (Description ?? "").Split(new[] { '.', '\n', '<' }).FirstOrDefault();
-            }
-        }
-        
         public CharacterSpecification Specification { get; set; }
         public ICollection<AttributeValue> AttributeValues { get; set; }
 

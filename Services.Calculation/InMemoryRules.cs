@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Campaigns.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,21 +11,21 @@ namespace Services.Calculation
     {
         #region Public Interface
 
-        public ICollection<AttributeContribution> ContributionsFrom(Attribute source)
+        public ICollection<AttributeContribution> ContributionsFrom(Campaigns.Model.Attribute source)
         {
             if (null == source)
                 throw new ArgumentNullException("source");
             return _contributionsByAttributeId[source.Id];
         }
 
-        public ICollection<AttributeContribution> ContributionsTo(Attribute target)
+        public ICollection<AttributeContribution> ContributionsTo(Campaigns.Model.Attribute target)
         {
             if (null == target)
                 throw new ArgumentNullException("target");
             return _contributionsForAttributeId[target.Id];
         }
 
-        public ICollection<AttributeContribution> ContributionsFrom(int sourceId)
+        public ICollection<Campaigns.Model.AttributeContribution> ContributionsFrom(int sourceId)
         {
             return _contributionsByAttributeId[sourceId];
         }
@@ -34,12 +35,12 @@ namespace Services.Calculation
             return _contributionsForAttributeId[targetId];
         }
 
-        public Attribute GetAttribute(string name, string category)
+        public Campaigns.Model.Attribute GetAttribute(string name, string category)
         {
             return _attributes[AttributeKey(name, category)];
         }
 
-        public IEnumerable<Attribute> Attributes { get { return _attributes.Values; } }
+        public IEnumerable<Campaigns.Model.Attribute> Attributes { get { return _attributes.Values; } }
 
         public void AddContribution(AttributeContribution contrib)
         {
@@ -50,7 +51,7 @@ namespace Services.Calculation
             GetContributionsForAttribute(contrib.Target).Add(contrib);
         }
 
-        public void AddAttribute(Attribute attrib)
+        public void AddAttribute(Campaigns.Model.Attribute attrib)
         {
             if (_attributes.Values.Any(a => a.Id == attrib.Id))
             {
@@ -72,7 +73,7 @@ namespace Services.Calculation
             return name + "##" + category;
         }
 
-        private IList<AttributeContribution> GetContributionsByAttribute(Attribute attrib)
+        private IList<AttributeContribution> GetContributionsByAttribute(Campaigns.Model.Attribute attrib)
         {
             if (null == attrib)
                 throw new ArgumentNullException("attrib");
@@ -85,7 +86,7 @@ namespace Services.Calculation
             return contribs;
         }
 
-        private IList<AttributeContribution> GetContributionsForAttribute(Attribute attrib)
+        private IList<AttributeContribution> GetContributionsForAttribute(Campaigns.Model.Attribute attrib)
         {
             if (null == attrib)
                 throw new ArgumentNullException("attrib");
@@ -98,7 +99,7 @@ namespace Services.Calculation
             return contribs;
         }
 
-        IDictionary<string, Attribute> _attributes = new Dictionary<string, Attribute>();
+        IDictionary<string, Campaigns.Model.Attribute> _attributes = new Dictionary<string, Campaigns.Model.Attribute>();
         IDictionary<int, IList<AttributeContribution>> _contributionsByAttributeId = new Dictionary<int, IList<AttributeContribution>>();
         IDictionary<int, IList<AttributeContribution>> _contributionsForAttributeId = new Dictionary<int, IList<AttributeContribution>>();
 

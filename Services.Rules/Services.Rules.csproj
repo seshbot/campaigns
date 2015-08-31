@@ -51,15 +51,13 @@
   <ItemGroup>
     <Compile Include="CalculationRules.cs" />
     <Compile Include="CharacterArchetype.cs" />
-    <Compile Include="CharacterSheet.cs" />
-    <Compile Include="Data\AttributeRepositoryEF.cs" />
     <Compile Include="Data\RepositoryExtensions.cs" />
-    <Compile Include="Data\RulesDbContext.cs" />
     <Compile Include="DnD5\LevelInfo.cs" />
     <Compile Include="DnD5\RaceInfo.cs" />
     <Compile Include="DnD5\Models.cs" />
     <Compile Include="DnD5\RulesDescription.cs" />
-    <Compile Include="Data\RulesDbContextInitializer.cs" />
+    <Compile Include="Data\CampaignsDbContextInitializer.cs" />
+    <Compile Include="IRulesService.cs" />
     <Compile Include="RulesService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -67,6 +65,10 @@
     <ProjectReference Include="..\Campaigns.Core\Campaigns.Core.csproj">
       <Project>{126b9575-c062-4b4e-982c-6686328eda82}</Project>
       <Name>Campaigns.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Campaigns.Model\Campaigns.Model.csproj">
+      <Project>{292bcf9d-5494-4119-95d1-fa9140ae05ff}</Project>
+      <Name>Campaigns.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\Services.Calculation\Services.Calculation.csproj">
       <Project>{2ee9ecd1-b698-4697-a889-50128a885754}</Project>
