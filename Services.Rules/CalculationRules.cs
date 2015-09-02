@@ -46,7 +46,7 @@ namespace Services.Rules
             _contributionsDb = contributionsDb;
             _calculationParams = calculationParams;
 
-            foreach (var attrib in _attributesDb.EntityTable.Where(IsStandard))
+            foreach (var attrib in _attributesDb.AsQueryable.Where(IsStandard))
             {
                 _memDb.AddAttribute(attrib);
             }

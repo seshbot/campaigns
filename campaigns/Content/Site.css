@@ -20,5 +20,13 @@
 input,
 select,
 textarea {
-    max-width: 280px;
+    /*max-width: 280px; */
+}
+
+.hovericon {
+    opacity: 0.2;
+}
+
+.hovericon:hover {
+    opacity: 0.5;
 }

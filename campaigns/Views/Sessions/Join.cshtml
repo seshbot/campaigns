@@ -1,0 +1,63 @@
+﻿@model Campaigns.Models.Sessions.SessionViewModel
+
+@{
+    ViewBag.Title = "Join Session";
+}
+
+<div ng-app="app" ng-controller="SessionsCtrl" class="container">
+    <h2>@(Model.Name ?? "Unnamed session") <small ng-cloak>({{sessionUserCount}} members)</small></h2>
+
+    <div class="row" ng-init="init('@Model.Id')">
+        <div class="col-md-4">
+            <div ng-show="editingSender">
+                <form ng-submit="updateSender()">
+                    <input ng-model="newSender" placeholder="Your Handle" ng-esc="cancelEditSender()" />
+                    <a href="" ng-click="cancelEditSender()">
+                        <small><span class="glyphicon glyphicon-remove"></span></small>
+                    </a>
+                </form>
+            </div>
+            <div ng-hide="editingSender" ng-cloak>
+                {{sender || "Anonymous"}}
+                <a href="" ng-click="editSender()">
+                    <small><span class="glyphicon glyphicon-pencil hovericon"></span></small>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-8">
+            @*<div class="summary alert alert-success alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    test alert message
+                </div>*@
+            <div style="padding-bottom: 20px">
+                <form class="form-inline" ng-submit="sendMessage()">
+                    <div class="input-group input-group-sm">
+                        <input type="text" ng-model="outgoingMessage" class="form-control" name="message" placeholder="New message"></input>
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default">Send</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div ng-cloak>
+                <ul class="messages list-unstyled">
+                    <li ng-repeat="message in messages">
+                        <p>
+                            <strong>{{message.SenderName}}</strong> <small class="text-muted">{{formatDate(message.TimeStamp)}}</small>
+                            <pre>{{message.Text}}</pre>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    @Scripts.Render("~/Scripts/moment.min.js")
+    @Scripts.Render("~/Scripts/jquery.signalR-2.2.0.min.js")
+    @Scripts.Render("~/SignalR/hubs")
+    @Scripts.Render("~/Scripts/angular.min.js")
+    @Scripts.Render("~/Scripts/sessions/app.js")
+}

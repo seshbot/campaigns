@@ -1,0 +1,32 @@
+﻿@model IEnumerable<Campaigns.Models.Sessions.SessionViewModel>
+
+@{
+    ViewBag.Title = "Session";
+}
+
+<div class="sessions-header">
+    <div>
+        @using (Html.BeginForm("Join", "", FormMethod.Get))
+        {
+            <input name="id" placeholder="Session ID" />
+            <submit class="btn btn-default">Join Session</submit>
+        }
+    </div>
+    <div>
+        @* @Html.ActionLink("New Session", "Create") *@
+        <button class="btn btn-primary" onclick="location.href='@Url.Action("Create")'">New Session</button>
+    </div>
+</div>
+
+<h2>Sessions</h2>
+
+<div class="sessions">
+    @foreach (var m in Model)
+    {
+        <div class="session">
+            <div class="session-title">
+                @Html.ActionLink(m.Id, "Join", new { id = m.Id })
+            </div>
+        </div>
+    }
+</div>

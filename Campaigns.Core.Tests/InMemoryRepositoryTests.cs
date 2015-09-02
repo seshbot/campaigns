@@ -42,24 +42,24 @@ namespace Campaigns.Core.Tests
             Assert.IsNotNull(amy);
             Assert.AreEqual("Amy", amy.Name);
 
-            Assert.AreEqual(1, _groups.EntityTable.Count());
-            Assert.AreEqual(2, _people.EntityTable.Count());
-            Assert.AreEqual(2, _pets.EntityTable.Count());
+            Assert.AreEqual(1, _groups.AsQueryable.Count());
+            Assert.AreEqual(2, _people.AsQueryable.Count());
+            Assert.AreEqual(2, _pets.AsQueryable.Count());
         }
 
         [TestMethod]
         public void TestForegnKeyRelationshipsAreSyncd()
         {
-            var g1 = _groups.EntityTable.First();
-            var p1 = _people.EntityTable.First();
+            var g1 = _groups.AsQueryable.First();
+            var p1 = _people.AsQueryable.First();
 
-            foreach (var person in _people.EntityTable)
+            foreach (var person in _people.AsQueryable)
             {
                 Assert.AreEqual(g1, person.Group);
                 Assert.AreEqual(g1.Id, person.GroupId);
             }
 
-            foreach (var pet in _pets.EntityTable)
+            foreach (var pet in _pets.AsQueryable)
             {
                 Assert.AreEqual(p1, pet.Owner);
                 Assert.AreEqual(p1.Id, pet.OwnerId);
@@ -71,7 +71,7 @@ namespace Campaigns.Core.Tests
         {
             _people.Add(new Person { Name = "Paul" });
 
-            var p1 = _people.EntityTable.FirstOrDefault(p => p.Name == "Paul");
+            var p1 = _people.AsQueryable.FirstOrDefault(p => p.Name == "Paul");
             Assert.IsNotNull(p1);
 
             Assert.IsNull(p1.Group);

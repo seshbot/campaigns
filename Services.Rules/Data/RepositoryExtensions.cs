@@ -13,12 +13,12 @@ namespace Services.Rules.Data
     {
         public static IQueryable<Campaigns.Model.AttributeContribution> ContributionsFrom(this IEntityStore<AttributeContribution> db, Campaigns.Model.Attribute source)
         {
-            return db.EntityTable.Where(c => c.SourceId == source.Id);
+            return db.AsQueryable.Where(c => c.SourceId == source.Id);
         }
 
         public static IQueryable<Campaigns.Model.AttributeContribution> ContributionsTo(this IEntityStore<AttributeContribution> db, Campaigns.Model.Attribute target)
         {
-            return db.EntityTable.Where(c => c.TargetId == target.Id);
+            return db.AsQueryable.Where(c => c.TargetId == target.Id);
         }
         
         public static Campaigns.Model.Attribute GetAttribute(this CampaignsDbContext db, string name, string category)

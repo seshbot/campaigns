@@ -29,6 +29,7 @@ namespace Campaigns.Controllers.API.Rules
         // GET: api/rules/dnd5e
         [ResponseType(typeof(Models.DAL.RuleSet))]
         [Route("{ruleset}")]
+        [HttpGet]
         public IHttpActionResult GetRoot(string ruleset)
         {
             var result = db.RuleSets
@@ -49,6 +50,7 @@ namespace Campaigns.Controllers.API.Rules
         // GET: api/rules/dnd5e/abilities
         [ResponseType(typeof(IEnumerable<Models.DAL.Ability>))]
         [Route("{ruleset}/abilities/")]
+        [HttpGet]
         public IHttpActionResult GetAbilities(string ruleset)
         {
             var results = db.RuleSets.FirstOrDefault(RuleSetIsNamed(ruleset));
@@ -63,6 +65,7 @@ namespace Campaigns.Controllers.API.Rules
         // GET: api/rules/dnd5e/skills
         [ResponseType(typeof(IEnumerable<Models.DAL.Skill>))]
         [Route("{ruleset}/skills/")]
+        [HttpGet]
         public IHttpActionResult GetSkills(string ruleset)
         {
             var results = db.RuleSets.FirstOrDefault(RuleSetIsNamed(ruleset));
@@ -76,6 +79,7 @@ namespace Campaigns.Controllers.API.Rules
         
         [ResponseType(typeof(Models.DAL.Ability))]
         [Route("{ruleset}/abilities/{id:int}")]
+        [HttpGet]
         public IHttpActionResult GetAbilityByID(string ruleset, int id)
         {
             var ruleSets = db.RuleSets.FirstOrDefault(RuleSetIsNamed(ruleset));
@@ -95,6 +99,7 @@ namespace Campaigns.Controllers.API.Rules
         
         [ResponseType(typeof(Models.DAL.Ability))]
         [Route("{ruleset}/abilities/{name}")]
+        [HttpGet]
         public IHttpActionResult GetAbilityByName(string ruleset, string name)
         {
             var ruleSets = db.RuleSets.FirstOrDefault(RuleSetIsNamed(ruleset));
@@ -118,6 +123,7 @@ namespace Campaigns.Controllers.API.Rules
         
         [ResponseType(typeof(Models.DAL.Skill))]
         [Route("{ruleset}/skills/{id:int}")]
+        [HttpGet]
         public IHttpActionResult GetSkillByID(string ruleset, int id)
         {
             var ruleSets = db.RuleSets.FirstOrDefault(RuleSetIsNamed(ruleset));
@@ -137,6 +143,7 @@ namespace Campaigns.Controllers.API.Rules
         
         [ResponseType(typeof(Models.DAL.Skill))]
         [Route("{ruleset}/skills/{name}")]
+        [HttpGet]
         public IHttpActionResult GetSkillByName(string ruleset, string name)
         {
             var ruleSets = db.RuleSets.FirstOrDefault(RuleSetIsNamed(ruleset));

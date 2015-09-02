@@ -42,7 +42,7 @@ namespace Services.Rules.Tests
 
         private Campaigns.Model.Attribute Attrib(string name, string category)
         {
-            return Attrib(_attributes.EntityTable, name, category);
+            return Attrib(_attributes.AsQueryable, name, category);
         }
 
         [TestInitialize]

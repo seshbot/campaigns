@@ -52,6 +52,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Sessions", "Index", "Sessions")</li>
                     <li>@Html.ActionLink("Character Sheets", "Index", "CharacterSheets")</li>
                     @RenderSection("navlinks", required: false)
                     @*<li>@Html.ActionLink("About", "About", "Home")</li>*@

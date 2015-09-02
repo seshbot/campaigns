@@ -18,7 +18,7 @@ namespace Campaigns.Core.Data
             _db = db;
         }
 
-        public IQueryable<T> EntityTable { get { return _db; } }
+        public IQueryable<T> AsQueryable { get { return _db; } }
 
         public void Add(T entity)
         {

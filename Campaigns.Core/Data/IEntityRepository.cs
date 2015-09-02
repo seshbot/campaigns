@@ -11,7 +11,7 @@ namespace Campaigns.Core.Data
     {
         T GetById(int id);
 
-        IQueryable<T> EntityTable { get; }
+        IQueryable<T> AsQueryable { get; }
     }
 
     public interface IEntityRepository<T> : IEntityStore<T> where T : BaseEntity

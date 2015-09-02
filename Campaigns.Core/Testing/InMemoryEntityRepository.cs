@@ -29,7 +29,7 @@ namespace Campaigns.Core.Testing
             return _foreignStores[entityType];
         }
 
-        public IQueryable<T> EntityTable
+        public IQueryable<T> AsQueryable
         {
             get
             {

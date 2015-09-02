@@ -86,44 +86,6 @@ namespace Services.Rules
                 throw new Exception(string.Format("update contains multiple references to {0} attributes: {1}",
                     multipleAttributeViolations.Count(), violationMessage));
             }
-
-            //var addedAndRemovedAttributes = update.AddedAttributes.Intersect(update.RemovedAttributes);
-            //if (addedAndRemovedAttributes.Count() > 0)
-            //{
-            //    throw new Exception(string.Format("update contains {0} attributes that were both added and removed: {1}", 
-            //        addedAndRemovedAttributes.Count(),
-            //        string.Join(", ", addedAndRemovedAttributes.Select(a => a.Name))));
-            //}
-
-            ////
-            //// find any allocations that are both added and removed or updated
-            ////
-
-            //var duplicateGroups = new[]
-            //{
-            //    new {
-            //        OverlapType = "added and removed",
-            //        Overlap = update.AddedAllocations.Intersect(update.RemovedAllocations)
-            //    },
-            //    new {
-            //        OverlapType = "updated and added",
-            //        Overlap = update.UpdatedAllocations.Intersect(update.AddedAllocations)
-            //    },
-            //    new {
-            //        OverlapType = "updated and removed",
-            //        Overlap = update.UpdatedAllocations.Intersect(update.RemovedAllocations)
-            //    },
-            //};
-
-            //foreach (var duplicates in duplicateGroups)
-            //{
-            //    if (duplicates.Overlap.Count() > 0)
-            //    {
-            //        var overlapsString = string.Join(", ", duplicates.Overlap.Select(a => a.Target.Name));
-            //        throw new Exception(string.Format("update contains {0} allocations that were both {1}: {2}",
-            //            duplicates.Overlap.Count(), duplicates.OverlapType, overlapsString));
-            //    }
-            //}
         }
 
         private void validate(CharacterSpecification specification)

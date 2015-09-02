@@ -150,7 +150,7 @@ namespace Campaigns.Models
 
         private Campaigns.Model.Attribute GetAttribute(Ability ability)
         {
-            return _attributesDb.EntityTable.First(a =>
+            return _attributesDb.AsQueryable.First(a =>
                 0 == string.Compare(a.Name, ability.ShortName, true) &&
                 0 == string.Compare(a.Category, "abilities", true));
         }
