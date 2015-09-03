@@ -7,7 +7,11 @@
 <div ng-app="app" ng-controller="SessionsCtrl" class="container">
     <h2>@(Model.Name ?? "Unnamed session") <small ng-cloak>({{sessionUserCount}} members)</small></h2>
 
-    <div class="row" ng-init="init('@Model.Id')">
+    <div class="alert alert-info" ng-hide="isConnected">
+        Connecting to chat hub...
+    </div>
+
+    <div class="row">
         <div class="col-md-4">
             <div ng-show="editingSender">
                 <form ng-submit="updateSender()">
@@ -60,4 +64,8 @@
     @Scripts.Render("~/SignalR/hubs")
     @Scripts.Render("~/Scripts/angular.min.js")
     @Scripts.Render("~/Scripts/sessions/app.js")
+
+    <script>
+        angular.module("app").value("sessionId", '@Model.Id');
+    </script>
 }

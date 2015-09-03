@@ -22,14 +22,39 @@ namespace Campaigns
             }
             _services = services;
         }
-        
-        public void SendMessage(string sessionId, string messageText)
-        {
-            var userId = Context.ConnectionId;
-            User user;
-            _services.TryGetUser(userId, out user);
 
-            var model = new Message { Sender = user, Text = messageText, TimeStamp = DateTime.UtcNow };
+        public async Task JoinSession(string sessionId)
+        {
+            if (null == sessionId)
+            {
+                throw new ArgumentNullException("sessionId");
+            }
+
+            // TODO: call the service to make sure we have permissions
+            await Groups.Add(Context.ConnectionId, sessionId);
+
+            var connectionId = Context.ConnectionId;
+            var userName = Context.User?.Identity?.Name ?? "Anonymous";
+
+            _services.AddClient(new Client { ConnectionId = connectionId, Name = userName, SessionId = sessionId });
+        }
+
+        public void SendMessage(string messageText)
+        {
+            var connectionId = Context.ConnectionId;
+            Client client;
+            if (!_services.TryGetClient(connectionId, out client))
+            {
+                throw new Exception("cannot send message - unrecognised client connection");
+            }
+
+            var sessionId = client.SessionId;
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new Exception("cannot send message - client has not joined any sessions");
+            }
+
+            var model = new Message { Sender = client, Text = messageText, TimeStamp = DateTime.UtcNow };
 
             var session = _services.GetSession(sessionId);
             _services.AddMessage(session, model);
@@ -37,47 +62,36 @@ namespace Campaigns
 
         public void SetUserHandle(string handle)
         {
-            var userId = Context.ConnectionId;
+            var connectionId = Context.ConnectionId;
 
-            User user;
-            _services.TryGetUser(userId, out user);
+            Client user;
+            _services.TryGetClient(connectionId, out user);
             user.Name = string.IsNullOrEmpty(handle) ? "Anonymous" : handle;
 
-            _services.UpdateUser(user);
+            _services.UpdateClient(user);
         }
 
         public override Task OnConnected()
         {
-            var userId = Context.ConnectionId;
-            var userName = Context.User?.Identity?.Name ?? "Anonymous";
-
-            _services.AddUser(new User { Id = userId, Name = userName });
-
             return base.OnConnected();
         }
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            var userId = Context.ConnectionId;
+            var connectionId = Context.ConnectionId;
 
             // TODO: mark as 'removed' so we can remember their username if they reconnect
-            var user = _services.GetUser(userId);
-            _services.RemoveUser(user);
-            
+            var client = _services.GetClient(connectionId);
+            if (null != client)
+            {
+                _services.RemoveClient(client);
+            }
+
             return base.OnDisconnected(stopCalled);
         }
 
         public override Task OnReconnected()
         {
-            var userId = Context.ConnectionId;
-            var userName = Context.User?.Identity?.Name ?? "Anonymous";
-
-            User user;
-            if (!_services.TryGetUser(userId, out user))
-            {
-                _services.AddUser(new User { Id = userId, Name = userName });
-            }
-
             return base.OnReconnected();
         }
     }

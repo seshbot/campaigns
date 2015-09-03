@@ -8,12 +8,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Campaigns.Models.Sessions
 {
-    public class User
+    public class Client
     {
-        public string Id { get; set; }
+        public string ConnectionId { get; set; }
+        public string SessionId { get; set; }
         public string Name { get; set; }
     }
 
@@ -23,13 +25,13 @@ namespace Campaigns.Models.Sessions
         Session GetSession(string id);
         IEnumerable<Session> GetSessions(bool publicOnly = true);
 
-        void AddUser(User user);
-        void RemoveUser(User user);
+        void AddClient(Client client);
+        void RemoveClient(Client client);
 
-        IEnumerable<User> GetUsers();
-        User GetUser(string id);
-        bool TryGetUser(string id, out User user);
-        void UpdateUser(User user);
+        IEnumerable<Client> GetClients();
+        Client GetClient(string id);
+        bool TryGetClient(string id, out Client client);
+        void UpdateClient(Client client);
 
         void AddMessage(Session session, Message message);
         IEnumerable<Message> GetSessionMessages(Session session);
@@ -57,7 +59,7 @@ namespace Campaigns.Models.Sessions
         private ConcurrentDictionary<string, Session> _sessionsById = new ConcurrentDictionary<string, Session>();
         private ConcurrentDictionary<string, IList<Message>> _messagesBySessionId = new ConcurrentDictionary<string, IList<Message>>();
 
-        private ConcurrentDictionary<string, User> _usersById = new ConcurrentDictionary<string, User>();
+        private ConcurrentDictionary<string, Client> _clientsById = new ConcurrentDictionary<string, Client>();
 
         public SessionService(IHubConnectionContext<dynamic> clients)
         {
@@ -121,7 +123,7 @@ namespace Campaigns.Models.Sessions
             Mapper.CreateMap<Message, MessageViewModel>();
 
             var viewModel = Mapper.Map<MessageViewModel>(message);
-            _clients.All.onNewMessage(viewModel);
+            _clients.Group(session.Id).onNewMessage(viewModel);
         }
 
         public IEnumerable<Message> GetSessionMessages(Session session)
@@ -133,39 +135,41 @@ namespace Campaigns.Models.Sessions
             return messages;
         }
 
-        public void AddUser(User user)
+        public void AddClient(Client client)
         {
-            _usersById.TryAdd(user.Id, user);
+            _clientsById.TryAdd(client.ConnectionId, client);
 
-            _clients.All.onUsersUpdated(GetUsers().Count());
+            _clients.All.onUsersUpdated(GetClients().Count());
         }
 
-        public void RemoveUser(User user)
+        public void RemoveClient(Client client)
         {
-            User userRemoved;
-            _usersById.TryRemove(user.Id, out userRemoved);
+            Client clientRemoved;
+            _clientsById.TryRemove(client.ConnectionId, out clientRemoved);
 
-            _clients.All.onUsersUpdated(GetUsers().Count());
+            _clients.All.onUsersUpdated(GetClients().Count());
         }
 
-        public IEnumerable<User> GetUsers()
+        public IEnumerable<Client> GetClients()
         {
-            return _usersById.Values;
+            return _clientsById.Values;
         }
 
-        public User GetUser(string id)
+        public Client GetClient(string id)
         {
-            return _usersById[id];
+            Client client;
+            _clientsById.TryGetValue(id, out client);
+            return client;
         }
 
-        public bool TryGetUser(string id, out User user)
+        public bool TryGetClient(string id, out Client client)
         {
-            return _usersById.TryGetValue(id, out user);
+            return _clientsById.TryGetValue(id, out client);
         }
 
-        public void UpdateUser(User user)
+        public void UpdateClient(Client client)
         {
-            _usersById.TryUpdate(user.Id, user, user);
+            _clientsById.TryUpdate(client.ConnectionId, client, client);
         }
     }
 }

@@ -13,28 +13,32 @@
     //        });
     //});
 
-    angular.module('app.messages', []);
-    angular.module('app.messages').value('apiUrl', '/api/rules');
-    angular.module('app.messages').factory('messages', ServiceFactory);
+    angular.module('app.messageHub', []);
+    angular.module('app.messageHub').value('apiUrl', '/api/rules');
+    angular.module('app.messageHub').factory('messageHub', ServiceFactory);
 
     ServiceFactory.$inject = ['$http', '$q'];
     function ServiceFactory($http, $q) {
-        console.log('getting message data...');
+        console.log('starting hub...');
 
         var hub = $.connection.sessionHub;
         $.connection.hub.logging = true;
-        $.connection.hub.start().done(function () {
-            console.log('hub started');
-        });
+        var startDeferred = $.connection.hub.start();
 
         return {
+            startDeferred: startDeferred,
+            joinSession: joinSessionHandler,
             sendMessage: sendMessageHandler,
             setUserHandle: setUserHandleHandler,
             client: hub.client,
         };
 
-        function sendMessageHandler(sessionId, messageText) {
-            return $.connection.sessionHub.server.sendMessage(sessionId, messageText);
+        function joinSessionHandler(sessionId) {
+            return $.connection.sessionHub.server.joinSession(sessionId);
+        };
+
+        function sendMessageHandler(messageText) {
+            return $.connection.sessionHub.server.sendMessage(messageText);
         };
 
         function setUserHandleHandler(userHandle) {
@@ -47,14 +51,15 @@
 (function () {
     'use strict';
 
-    angular.module('app', ['app.messages']);
+    angular.module('app', ['app.messageHub']);
     angular.module('app').directive('ngEsc', EscDirective);
     angular.module('app').controller('SessionsCtrl', Controller);
     
-    Controller.$inject = ['$scope', '$http', 'messages'];
-    function Controller($scope, $http, messages) {
-        $scope.init = initHandler;
-        $scope.sessionId = 'session ID not set';
+    Controller.$inject = ['$scope', '$http', 'messageHub', 'sessionId'];
+    function Controller($scope, $http, messageHub, sessionId) {
+        console.log('starting messages service...');
+
+        $scope.isConnected = false;
         $scope.sessionUserCount = 0;
 
         $scope.sender = 'Anonymous';
@@ -71,19 +76,27 @@
         $scope.formatDate = formatDate;
 
         $scope.sendMessage = sendMessageHandler;
-        messages.client.onNewMessage = handleNewMessage;
-        messages.client.onUsersUpdated = handleUsersUpdated;
+        messageHub.client.onNewMessage = handleNewMessage;
+        messageHub.client.onUsersUpdated = handleUsersUpdated;
 
-        function initHandler(sessionId) {
-            $scope.sessionId = sessionId;
-        }
+        console.log('waiting for hub before joining session...');
+        messageHub.startDeferred.done(function () {
+            console.log('hub started. joining session...');
+            messageHub.joinSession(sessionId).done(function () {
+                console.log('joined session');
+
+                $scope.$apply(function () {
+                    $scope.isConnected = true;
+                });
+            });
+        });
 
         function formatDate(date) {
             return moment(date).calendar();
         };
 
         function sendMessageHandler() {
-            messages.sendMessage($scope.sessionId, $scope.outgoingMessage.trim())
+            messageHub.sendMessage($scope.outgoingMessage.trim())
                 .done(function () {
                     $scope.$apply(function () {
                         $scope.outgoingMessage = '';
@@ -99,7 +112,6 @@
                     var messageTime = moment(message.TimeStamp);
                     var secondsDifference = moment.duration(messageTime.diff(frontTime)).seconds();
 
-                    console.log(secondsDifference);
                     if (secondsDifference < 10) {
                         front.Text += '\n\n' + message.Text;
                         return;
@@ -123,7 +135,7 @@
         function onUpdateSender() {
             $scope.sender = $scope.newSender;
             $scope.editingSender = false;
-            messages.setUserHandle($scope.sender);
+            messageHub.setUserHandle($scope.sender);
         };
 
         function onCancelEditSender() {
