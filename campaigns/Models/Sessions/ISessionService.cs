@@ -33,8 +33,9 @@ namespace Campaigns.Models.Sessions
         bool TryGetClient(string id, out Client client);
         void UpdateClient(Client client);
 
-        void AddMessage(Session session, Message message);
-        IEnumerable<Message> GetSessionMessages(Session session);
+        void HandleCommand(Session session, SendMessageCommand command);
+        void HandleCommand(Session session, RollDiceCommand command);
+        IEnumerable<BaseClientEvent> GetSessionEvents(Session session);
     }
 
     public class SessionService : ISessionService
@@ -57,7 +58,7 @@ namespace Campaigns.Models.Sessions
 
         private IHubConnectionContext<dynamic> _clients;
         private ConcurrentDictionary<string, Session> _sessionsById = new ConcurrentDictionary<string, Session>();
-        private ConcurrentDictionary<string, IList<Message>> _messagesBySessionId = new ConcurrentDictionary<string, IList<Message>>();
+        private ConcurrentDictionary<string, IList<BaseClientEvent>> _eventsBySessionId = new ConcurrentDictionary<string, IList<BaseClientEvent>>();
 
         private ConcurrentDictionary<string, Client> _clientsById = new ConcurrentDictionary<string, Client>();
 
@@ -108,31 +109,80 @@ namespace Campaigns.Models.Sessions
             _sessionsById.TryGetValue(id, out result);
             return result;
         }
-
-        private int _nextMessageId = 1;
-        public void AddMessage(Session session, Message message)
+        
+        private int _nextEventId = 1;
+        private void storeEvent(Session session, BaseClientEvent clientEvent)
         {
-            message.Id = _nextMessageId++;
+            clientEvent.Id = _nextEventId++;
 
-            var messages = _messagesBySessionId.GetOrAdd(session.Id, k => new List<Message>());
-            lock (messages)
+            var events = _eventsBySessionId.GetOrAdd(session.Id, k => new List<BaseClientEvent>());
+            lock (events)
             {
-                messages.Add(message);
+                events.Add(clientEvent);
             }
+        }
 
-            Mapper.CreateMap<Message, MessageViewModel>();
+        private void setBaseEventDetails(BaseClientEvent baseEvent, BaseCommand baseCommand)
+        {
+            // TODO: get client details from the hub context (dont have them in the command?)
+            baseEvent.Sender = baseCommand.Sender;
+            baseEvent.TimeStamp = baseCommand.TimeStamp;
+        }
 
-            var viewModel = Mapper.Map<MessageViewModel>(message);
+        private ClientSentMessageEvent createEvent(SendMessageCommand command)
+        {
+            var result = new ClientSentMessageEvent { Text = command.Text };
+            setBaseEventDetails(result, command);
+            return result;
+        }
+
+        private ClientRolledDiceEvent createEvent(RollDiceCommand command)
+        {
+            var result = new ClientRolledDiceEvent();
+            setBaseEventDetails(result, command);
+            return result;
+        }
+
+        public void HandleCommand(Session session, SendMessageCommand command)
+        {
+            var newEvent = createEvent(command);
+            storeEvent(session, newEvent);
+
+            //Mappings
+            Mapper.CreateMap<BaseClientEvent, BaseClientEventViewModel>()
+                  .Include<ClientSentMessageEvent, ClientSentMessageEventViewModel>();
+            Mapper.CreateMap<ClientSentMessageEvent, ClientSentMessageEventViewModel>();
+           
+            var viewModel = Mapper.Map(newEvent, newEvent.GetType(), typeof(ClientSentMessageEventViewModel));
+            _clients.Group(session.Id).onNewMessage(viewModel);
+        }
+        
+        public void HandleCommand(Session session, RollDiceCommand command)
+        {
+            var rollSpec = DiceService.ParseFormula(command.DiceRollFormula);
+            var roll = DiceService.RollDice(rollSpec);
+
+            var newEvent = createEvent(command);
+            newEvent.Roll = roll;
+            storeEvent(session, newEvent);
+
+            //Mappings
+            Mapper.CreateMap<BaseClientEvent, BaseClientEventViewModel>()
+                  .Include<ClientRolledDiceEvent, ClientRolledDiceEventViewModel>();
+            Mapper.CreateMap<ClientRolledDiceEvent, ClientRolledDiceEventViewModel>();
+            Mapper.CreateMap<DiceGroupRoll, DiceGroupRollViewModel>();
+
+            var viewModel = Mapper.Map(newEvent, newEvent.GetType(), typeof(ClientRolledDiceEventViewModel));
             _clients.Group(session.Id).onNewMessage(viewModel);
         }
 
-        public IEnumerable<Message> GetSessionMessages(Session session)
+        public IEnumerable<BaseClientEvent> GetSessionEvents(Session session)
         {
-            var messages = _messagesBySessionId
-                .GetOrAdd(session.Id, k => new List<Message>())
+            var events = _eventsBySessionId
+                .GetOrAdd(session.Id, k => new List<BaseClientEvent>())
                 .ToList();
 
-            return messages;
+            return events;
         }
 
         public void AddClient(Client client)

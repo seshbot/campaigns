@@ -4,7 +4,16 @@
     ViewBag.Title = "Join Session";
 }
 
+@*
+    TODO:
+     - dice
+    CHAT TODO:
+     - per-client colours
+     - /w target whisper to someone
+ *@
+
 <div ng-app="app" ng-controller="SessionsCtrl" class="container">
+
     <h2>@(Model.Name ?? "Unnamed session") <small ng-cloak>({{sessionUserCount}} members)</small></h2>
 
     <div class="alert alert-info" ng-hide="isConnected">
@@ -22,7 +31,7 @@
                 </form>
             </div>
             <div ng-hide="editingSender" ng-cloak>
-                {{sender || "Anonymous"}}
+                <div ng-dblclick="editSender()">{{sender || "Anonymous"}}</div>
                 <a href="" ng-click="editSender()">
                     <small><span class="glyphicon glyphicon-pencil hovericon"></span></small>
                 </a>
@@ -35,23 +44,39 @@
                 </div>*@
             <div style="padding-bottom: 20px">
                 <form class="form-inline" ng-submit="sendMessage()">
-                    <div class="input-group input-group-sm">
-                        <input type="text" ng-model="outgoingMessage" class="form-control" name="message" placeholder="New message"></input>
+                    <div class="input-group input-group-lg" ng-cloak>
+                        <input type="text" ng-model="outgoingMessage" class="form-control" name="message" placeholder="New message or dice formula"></input>
+                        {{isOutgoingMessageRollFormula()}}
                         <span class="input-group-btn">
-                            <button type="submit" class="btn btn-default">Send</button>
+                            <button type="button" class="btn btn-default" ng-click="editRollFormula()">Dice...</button>
+                        </span>
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default">{{outgoingMessageIsRollFormula() ? 'Roll' : 'Send'}}</button>
                         </span>
                     </div>
                 </form>
+                <div ng-show="isEditingRollFormula" ng-cloak class="animate-show">
+                    <h4>Select Your Dice</h4>
+                    <table class="table table-hover">
+                        @foreach (var die in new [] {"d4", "d6", "d8", "d12", "d20", "d100"}) {
+                            <tr>
+                                @foreach (var n in new [] { 1, 2, 3, 4, 5 }) {
+                                <td ng-click="addDieToFormula('@die', @n)">
+                                    @(n)@(die)
+                                </td>
+                                }
+                            </tr>
+                        }
+                    </table>
+                </div>
             </div>
             <div ng-cloak>
-                <ul class="messages list-unstyled">
-                    <li ng-repeat="message in messages">
-                        <p>
-                            <strong>{{message.SenderName}}</strong> <small class="text-muted">{{formatDate(message.TimeStamp)}}</small>
-                            <pre>{{message.Text}}</pre>
-                        </p>
-                    </li>
-                </ul>
+                <div ng-repeat="message in messages" class="panel panel-default" ng-class="{'panel-success' : message.isMyMessage}">
+                    <div class="panel-heading">
+                        <strong>{{message.senderName}}</strong> <small class="text-muted">{{formatDate(message.timeStamp)}}</small>
+                    </div>
+                    <div class="panel-body" ng-bind-html="message.text | sanitize"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -62,7 +87,7 @@
     @Scripts.Render("~/Scripts/moment.min.js")
     @Scripts.Render("~/Scripts/jquery.signalR-2.2.0.min.js")
     @Scripts.Render("~/SignalR/hubs")
-    @Scripts.Render("~/Scripts/angular.min.js")
+    @Scripts.Render("~/Scripts/angular.js")
     @Scripts.Render("~/Scripts/sessions/app.js")
 
     <script>

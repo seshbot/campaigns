@@ -54,10 +54,31 @@ namespace Campaigns
                 throw new Exception("cannot send message - client has not joined any sessions");
             }
 
-            var model = new Message { Sender = client, Text = messageText, TimeStamp = DateTime.UtcNow };
+            var model = new SendMessageCommand { Sender = client, Text = messageText, TimeStamp = DateTime.UtcNow };
 
             var session = _services.GetSession(sessionId);
-            _services.AddMessage(session, model);
+            _services.HandleCommand(session, model);
+        }
+
+        public void SendDiceRoll(string rollFormula)
+        {
+            var connectionId = Context.ConnectionId;
+            Client client;
+            if (!_services.TryGetClient(connectionId, out client))
+            {
+                throw new Exception("cannot send dice roll - unrecognised client connection");
+            }
+
+            var sessionId = client.SessionId;
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new Exception("cannot send dice roll - client has not joined any sessions");
+            }
+
+            var model = new RollDiceCommand { Sender = client, DiceRollFormula = rollFormula, TimeStamp = DateTime.UtcNow };
+
+            var session = _services.GetSession(sessionId);
+            _services.HandleCommand(session, model);
         }
 
         public void SetUserHandle(string handle)
