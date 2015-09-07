@@ -56,8 +56,8 @@
     angular.module('app').directive('ngEsc', EscDirective);
     angular.module('app').controller('SessionsCtrl', Controller);
 
-    Controller.$inject = ['$scope', '$http', 'messageHub', 'sessionId'];
-    function Controller($scope, $http, messageHub, sessionId) {
+    Controller.$inject = ['$scope', '$http', 'messageHub', 'sessionId', 'diceUpdateCallback'];
+    function Controller($scope, $http, messageHub, sessionId, diceUpdateCallback) {
         console.log('starting messages service...');
 
         $scope.isConnected = false;
@@ -78,11 +78,14 @@
         $scope.editRollFormula = onEditRollFormula;
         $scope.addDieToFormula = onAddDieToFormula;
 
-        $scope.messages = [];
+        $scope.messageBlocks = [];
 
         $scope.formatDate = formatDate;
 
         $scope.sendMessage = sendMessageHandler;
+        $scope.saveMessage = saveMessageHandler;
+        $scope.clearMessage = clearMessageHandler;
+
         messageHub.client.onNewMessage = handleNewMessage;
         messageHub.client.onNewDiceRoll = handleNewMessage;
         messageHub.client.onUsersUpdated = handleUsersUpdated;
@@ -131,6 +134,7 @@
             newOutgoingMessage = newOutgoingMessage.trimRight() + ' ' + count + die;
 
             $scope.outgoingMessage = newOutgoingMessage;
+            diceUpdateCallback();
         };
 
         function formatDate(date) {
@@ -156,61 +160,72 @@
                         });
                     });
             }
+
+            diceUpdateCallback();
+        };
+
+        function saveMessageHandler() {
+            $scope.outgoingMessage = '';
+            $scope.isEditingRollFormula = false;
+
+            diceUpdateCallback();
+        };
+
+        function clearMessageHandler() {
+            $scope.outgoingMessage = '';
+            $scope.isEditingRollFormula = false;
+
+            diceUpdateCallback();
         };
 
         function MessageBlock(senderName, senderId, timeStamp) {
             this.senderName = senderName;
             this.senderConnectionId = senderId;
-            this.isMyMessage = senderId === $scope.connectionId;
-            this.timeStamp = timeStamp;
+            this.isMine = senderId === $scope.connectionId;
+            this.earliestTimeStamp = timeStamp;
+            this.latestTimeStamp = timeStamp;
             this.messages = [];
-            this.text = '';
-        }
-
-        MessageBlock.prototype._tryAddText = function (text) {
-            var self = this;
-
-            if (self.text.trim() !== '') {
-                self.text += '<br />';
-            }
-
-            self.text += text;
         }
 
         MessageBlock.prototype.addMessage = function (message) {
             var self = this;
             self.messages.push(message);
-            self.timeStamp = message.TimeStamp;
+            self.latestTimeStamp = message.TimeStamp;
 
-            if (typeof (message.Text) !== 'undefined') {
-                self._tryAddText(message.Text);
-            }
+            message.hasTextMessage = typeof (message.Text) !== 'undefined';
+            message.hasRoll = typeof (message.RollFormula) !== 'undefined';
 
-            if (typeof (message.RollFormula) !== 'undefined') {
+            if (message.hasRoll) {
                 // the formula part
-                var partFormula = '<span class="text-muted">';
+                var partFormula = '';
                 for (var idx = 0, len = message.RollDiceGroupRolls.length; idx < len; idx++) {
                     if (idx > 0) partFormula += ' + ';
                     var group = message.RollDiceGroupRolls[idx];
-                    partFormula += group.DiceGroupDiceCount + 'd' + group.DiceGroupDiceSides;
+                    if (1 == group.DiceGroupDiceSides) {
+                        partFormula += group.DiceGroupDiceCount;
+                    } else {
+                        partFormula += group.DiceGroupDiceCount + 'd' + group.DiceGroupDiceSides;
+                    }
                 }
-                partFormula += '</span>';
+                message.formulaText = partFormula;
 
                 // the group results part
-                var partGroupResults = '<span class="pull-right">';
+                var partGroupResults = '';
                 for (var idx = 0, len = message.RollDiceGroupRolls.length; idx < len; idx++) {
                     if (idx > 0) partGroupResults += ' + ';
                     var group = message.RollDiceGroupRolls[idx];
-                    partGroupResults += '(';
-                    partGroupResults += group.Results.join('+') + '=' + group.Total;
-                    partGroupResults += ')';
+                    if (1 == group.DiceGroupDiceSides) {
+                        partGroupResults += group.Total;
+                    } else {
+                        partGroupResults += '(';
+                        partGroupResults += group.Results.join('+') + '=' + group.Total;
+                        partGroupResults += ')';
+                    }
                 }
-                partGroupResults += '</span>';
+                message.groupResultsText = partGroupResults;
                 
                 // the grand total part
-                var partTotal = '<span><strong>' + message.RollTotal + '</strong></span>';
-
-                self._tryAddText(partFormula + ' = ' + partTotal + partGroupResults);
+                message.totalText = message.RollTotal;
             }
         }
 
@@ -228,14 +243,15 @@
                 }
 
                 function getOrAddMessageBlock() {
-                    if ($scope.messages.length > 0) {
-                        var front = $scope.messages[0];
-                        if (front.senderConnectionId === message.SenderConnectionId && areCloseInTime(front.timeStamp, message.TimeStamp)) {
+                    if ($scope.messageBlocks.length > 0) {
+                        var front = $scope.messageBlocks[0];
+                        var sameSender = front.senderConnectionId === message.SenderConnectionId;
+                        if (sameSender && areCloseInTime(front.latestTimeStamp, message.TimeStamp)) {
                             return front;
                         }
                     }
                     var newMessageBlock = new MessageBlock(message.SenderName, message.SenderConnectionId, message.TimeStamp);
-                    $scope.messages.unshift(newMessageBlock);
+                    $scope.messageBlocks.unshift(newMessageBlock);
                     return newMessageBlock;
                 }
             });

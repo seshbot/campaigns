@@ -189,7 +189,7 @@ namespace Campaigns.Models.Sessions
         {
             _clientsById.TryAdd(client.ConnectionId, client);
 
-            _clients.All.onUsersUpdated(GetClients().Count());
+            _clients.Group(client.SessionId).onUsersUpdated(GetClients(client.SessionId).Count());
         }
 
         public void RemoveClient(Client client)
@@ -197,12 +197,17 @@ namespace Campaigns.Models.Sessions
             Client clientRemoved;
             _clientsById.TryRemove(client.ConnectionId, out clientRemoved);
 
-            _clients.All.onUsersUpdated(GetClients().Count());
+            _clients.Group(client.SessionId).onUsersUpdated(GetClients(client.SessionId).Count());
         }
 
         public IEnumerable<Client> GetClients()
         {
             return _clientsById.Values;
+        }
+
+        public IEnumerable<Client> GetClients(string sessionId)
+        {
+            return _clientsById.Values.Where(c => c.SessionId == sessionId);
         }
 
         public Client GetClient(string id)

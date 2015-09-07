@@ -21,7 +21,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4" style="margin-bottom: 20px">
             <div ng-show="editingSender">
                 <form ng-submit="updateSender()">
                     <input ng-model="newSender" placeholder="Your Handle" ng-esc="cancelEditSender()" />
@@ -31,51 +31,79 @@
                 </form>
             </div>
             <div ng-hide="editingSender" ng-cloak>
-                <div ng-dblclick="editSender()">{{sender || "Anonymous"}}</div>
-                <a href="" ng-click="editSender()">
+                <div style="float:left" ng-dblclick="editSender()">{{sender || "Anonymous"}}</div>
+                <a href="" ng-click="editSender()" style="padding-left: 10px">
                     <small><span class="glyphicon glyphicon-pencil hovericon"></span></small>
                 </a>
             </div>
         </div>
+        
         <div class="col-md-8">
             @*<div class="summary alert alert-success alert-dismissable">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                     test alert message
                 </div>*@
             <div style="padding-bottom: 20px">
-                <form class="form-inline" ng-submit="sendMessage()">
-                    <div class="input-group input-group-lg" ng-cloak>
-                        <input type="text" ng-model="outgoingMessage" class="form-control" name="message" placeholder="New message or dice formula"></input>
-                        {{isOutgoingMessageRollFormula()}}
-                        <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="editRollFormula()">Dice...</button>
-                        </span>
-                        <span class="input-group-btn">
-                            <button type="submit" class="btn btn-default">{{outgoingMessageIsRollFormula() ? 'Roll' : 'Send'}}</button>
-                        </span>
-                    </div>
-                </form>
-                <div ng-show="isEditingRollFormula" ng-cloak class="animate-show">
-                    <h4>Select Your Dice</h4>
-                    <table class="table table-hover">
-                        @foreach (var die in new [] {"d4", "d6", "d8", "d12", "d20", "d100"}) {
-                            <tr>
-                                @foreach (var n in new [] { 1, 2, 3, 4, 5 }) {
-                                <td ng-click="addDieToFormula('@die', @n)">
-                                    @(n)@(die)
-                                </td>
+                <div class="form-group">
+                    <form class="form-inline" ng-submit="sendMessage()">
+                        <div class="input-group input-group-lg" ng-cloak>
+                            <input id="message" type="text" ng-model="outgoingMessage" class="form-control" name="message" placeholder="New message or dice formula"></input>
+
+                            <!-- Split button -->
+                            <div class="input-group-btn">
+                                <button type="submit" class="btn btn-default">{{outgoingMessageIsRollFormula() ? 'Roll' : 'Send'}}</button>
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="caret"></span>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li class="disabled"><a href="" ng-click="saveMessage()">Save...</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="" ng-click="clearMessage()">Clear</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="btn-toolbar">
+                    @*<div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default" disabled="disabled">Colour</button>
+                    </div>*@
+                    @foreach (var die in new [] {"d4", "d6", "d8", "d12", "d20", "d100", ""}) {
+                        <!-- Split button -->
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default" ng-click="addDieToFormula('@die', 1)">@(die == "" ? "+1" : die)</button>
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="caret"></span>
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                @foreach (var n in new [] { 2, 3, 4, 5 }) {
+                                    <li><a href="" ng-click="addDieToFormula('@die', @n)">@(n)@(die)</a></li>
                                 }
-                            </tr>
-                        }
-                    </table>
+                            </ul>
+                        </div>
+                    }
                 </div>
             </div>
             <div ng-cloak>
-                <div ng-repeat="message in messages" class="panel panel-default" ng-class="{'panel-success' : message.isMyMessage}">
+                <div ng-repeat="messageBlock in messageBlocks" class="panel panel-default" ng-class="{'panel-success' : messageBlock.isMine}">
                     <div class="panel-heading">
-                        <strong>{{message.senderName}}</strong> <small class="text-muted">{{formatDate(message.timeStamp)}}</small>
+                        <strong>{{messageBlock.senderName}}</strong> <small class="text-muted">{{formatDate(messageBlock.earliestTimeStamp)}}</small>
                     </div>
-                    <div class="panel-body" ng-bind-html="message.text | sanitize"></div>
+                    <div class="panel-body" style="padding-bottom: 0">@*ng-bind-html="message.text | sanitize">*@
+                        <div ng-repeat="message in messageBlock.messages" style="padding-bottom: 15px">
+                            <div ng-show="message.hasTextMessage">
+                                {{message.Text}}
+                            </div>
+                            <div ng-show="message.hasRoll">
+                                <span class="text-muted">{{message.formulaText}}</span>
+                                <span>=</span>
+                                <span><strong>{{message.totalText}}</strong></span>
+                                <span class="pull-right">{{message.groupResultsText}}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,6 +119,17 @@
     @Scripts.Render("~/Scripts/sessions/app.js")
 
     <script>
+        function resetFocus() {
+            $('#message').focus();
+        }
+
+        function onDiceUpdated() {
+            resetFocus();
+        }
+
         angular.module("app").value("sessionId", '@Model.Id');
+        angular.module("app").value("diceUpdateCallback", onDiceUpdated);
+
+        $(resetFocus);
     </script>
 }

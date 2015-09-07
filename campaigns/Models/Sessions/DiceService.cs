@@ -46,7 +46,7 @@ namespace Campaigns.Models.Sessions
     {
 //        private static Regex FORMULA_REGEX = new Regex(@"^(\s*\d*d\d+\s*[\s\+])*(\s*\d*d\d+)\s*$", RegexOptions.IgnoreCase);
         private static Regex DICESPEC_SEPARATOR_REGEX = new Regex(@"[\s\+]+", RegexOptions.IgnoreCase);
-        private static Regex DICESPEC_REGEX = new Regex(@"^\s*(\d*)d(\d+)\s*\+?\s*$", RegexOptions.IgnoreCase);
+        private static Regex DICESPEC_REGEX = new Regex(@"^\s*(\d*)(?:d(\d+))?\s*\+?\s*$", RegexOptions.IgnoreCase);
 
         private static Random _rnd = new Random();
 
@@ -54,11 +54,13 @@ namespace Campaigns.Models.Sessions
         {
             var diceGroupSpecs = DICESPEC_SEPARATOR_REGEX.Split(formula);
 
+            var m1 = DICESPEC_REGEX.Match(diceGroupSpecs[0]);
+
             var diceGroups =
                 from spec in diceGroupSpecs
                 let match = DICESPEC_REGEX.Match(spec)
                 let diceCount = tryIntParseOrDefault(match.Groups[1].Value, 0)
-                let diceSides = int.Parse(match.Groups[2].Value)
+                let diceSides = tryIntParseOrDefault(match.Groups[2].Value, 1)
                 select new DiceGroup { DiceCount = diceCount, DiceSides = diceSides };
 
             return new RollSpec { Formula = formula, DiceGroups = diceGroups };
@@ -81,7 +83,7 @@ namespace Campaigns.Models.Sessions
         private static IEnumerable<int> rollDiceGroup(DiceGroup diceGroup)
         {
             return Enumerable.Range(0, diceGroup.DiceCount)
-                .Select(idx => _rnd.Next(1, diceGroup.DiceSides))
+                .Select(idx => 1 + _rnd.Next(diceGroup.DiceSides))
                 .ToList();
         }
 
