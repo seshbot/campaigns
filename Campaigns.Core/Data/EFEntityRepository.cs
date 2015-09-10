@@ -20,6 +20,8 @@ namespace Campaigns.Core.Data
 
         public IQueryable<T> AsQueryable { get { return _db; } }
 
+        public IQueryable<T> AsQueryableNoTracking { get { return _db.AsNoTracking(); } }
+
         public void Add(T entity)
         {
             if (entity == null)

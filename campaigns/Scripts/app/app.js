@@ -14,8 +14,7 @@
         $scope.abilities = [];
         $scope.skills = [];
 
-        $scope.selectedAbilityId = -1;
-        $scope.selectedSkillId = -1;
+        $scope.selectedAbilityIds = [];
 
         activate();
 
@@ -26,24 +25,27 @@
             $scope.loaded = false;
             $scope.errorMessage = '';
             $scope.errorMessageDetail = '';
-            rules.getRules().then(
-                function (data) {
-                    $scope.loaded = true;
-                    $scope.abilities = data.abilities;
-                    $scope.skills = data.skills;
-                    console.log('got data: ', data);
-                },
-                function (errorInfo) {
-                    $scope.loaded = true;
-                    $scope.errorMessage = 'could not retrieve data - ' + errorInfo.statusText;
-                    $scope.errorMessageDetail = errorInfo.message + '\n' + errorInfo.messageDetail;
-                    console.log('got error: ', errorInfo.message, errorInfo.messageDetail);
-                }
+            rules.getCategoryAttributes('abilities').then(
+                handleData('abilities'), handleError
             );
-        };
+            rules.getCategoryAttributes('skills').then(
+                handleData('skills'), handleError
+            );
 
-        //$scope.init = function (idToLoad) {
-        //    $scope.loadCharacterSheet(idToLoad);
-        //};
+            function handleData(category) {
+                return function (data) {
+                    $scope.loaded = true;
+                    $scope[category] = data;
+                    console.log('got ' + category + ' data: ', data);
+                };
+            };
+
+            function handleError(errorInfo) {
+                $scope.loaded = true;
+                $scope.errorMessage = 'could not retrieve data - ' + errorInfo.statusText;
+                $scope.errorMessageDetail = errorInfo.message + '\n' + errorInfo.messageDetail;
+                console.log('got error: ', errorInfo.message, errorInfo.messageDetail);
+            };
+        };
     }
 })();

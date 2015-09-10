@@ -8,37 +8,126 @@ using System.Web;
 using System.Web.Mvc;
 using Campaigns.Models;
 using Campaigns.Helpers;
-using Services.Calculation;
-using Campaigns.Models.DAL;
 using System.Linq.Expressions;
+using Campaigns.Models.CharacterSheet;
+using Services.Rules;
+using Campaigns.Core.Data;
+using AutoMapper;
+using Campaigns.Model;
 
 namespace Campaigns.Controllers
 {
     public class CharacterSheetsController : Controller
     {
-        private CharacterSheetDbContext _charDb = new CharacterSheetDbContext();
-        private ICharacterSheetService _service;
+        private IRulesService _rules;
 
-        public CharacterSheetsController()
+        public CharacterSheetsController(IRulesService rules)
         {
-            _service = new CharacterSheetService(_charDb);
+            _rules = rules;
         }
 
-        public CharacterSheetsController(ICharacterSheetService service)
+        [NonAction]
+        private CreateCharacterViewModel PrepareCreateCharacterViewModel()
         {
-            _service = service;
+            return new CreateCharacterViewModel
+            {
+                Level = 1,
+                RaceId = _rules.GetAttributesByCategory("races").First().Id,
+                InitialClassId = _rules.GetAttributesByCategory("classes").First().Id,
+            };
+        }
+
+        [NonAction]
+        private CharacterViewModel PrepareCharacterViewModel(Character character)
+        {
+            var raceName = character.Sheet.AttributeAllocations
+                ?.FirstOrDefault(a => "races" == a.Attribute.Category)
+                ?.Attribute.LongName;
+
+            var className = character.Sheet.AttributeAllocations
+                ?.FirstOrDefault(a => "classes" == a.Attribute.Category)
+                ?.Attribute.LongName;
+
+            Mapper.CreateMap<AttributeContribution, AttributeContributionViewModel>();
+            Mapper.CreateMap<AttributeValue, AttributeValueViewModel>();
+            Mapper.CreateMap<Character, CharacterViewModel>()
+                    .ForMember(dest => dest.AttributeValues, o => o.MapFrom(src => src.Sheet.AttributeValues));
+
+            var viewModel = Mapper.Map<CharacterViewModel>(character);
+            viewModel.RaceName = raceName;
+            viewModel.ClassName = className;
+            return viewModel;
+        }
+
+        [NonAction]
+        private Models.CharacterSheet.IndexViewModel PrepareIndexViewModel()
+        {
+            Mapper.CreateMap<Model.Attribute, SelectListItem>()
+                .ForMember(dest => dest.Value, o => o.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Text, o => o.MapFrom(src => src.LongName));
+
+            return new Models.CharacterSheet.IndexViewModel
+            {
+                Characters = _rules.GetCharacters().Select(PrepareCharacterViewModel).ToList(),
+                CreateCharacter = PrepareCreateCharacterViewModel(),
+                Races = _rules.GetAttributesByCategory("races").Select(Mapper.Map<SelectListItem>).ToList(),
+                Classes = _rules.GetAttributesByCategory("classes").Select(Mapper.Map<SelectListItem>).ToList(),
+            };
+        }
+
+        [NonAction]
+        private Campaigns.Model.Character CreateCharacter(CreateCharacterViewModel viewModel)
+        {
+            if (null == viewModel)
+                return _rules.CreateCharacter("Unnamed", "");
+
+            var standardAllocations = _rules.GetAttributesByCategory("abilities")
+                .Where(a => a.IsStandard)
+                .ToList()
+                .Select(a => new AttributeAllocation { Attribute = a, Value = 8 });
+
+            var characterAllocations = new[]
+            {
+                new AttributeAllocation { Attribute = _rules.GetAttributeById(viewModel.RaceId) },
+                new AttributeAllocation { Attribute = _rules.GetAttributeById(viewModel.InitialClassId) },
+            };
+
+            var allocations = standardAllocations.Concat(characterAllocations);
+            var newCharacter = _rules.CreateCharacter(viewModel.Name, viewModel.Description, allocations);
+            return newCharacter;
         }
 
         // GET: CharacterSheets
         public ActionResult Index()
         {
-            var characterSheetsWithDerivedInfo =
-               (from sheet in _charDb.CharacterSheets.ToList()
-                select _service.AddCalculatedStatisticsTo(sheet)).ToList();
-
-            return View(characterSheetsWithDerivedInfo);
+            var viewModel = PrepareIndexViewModel();
+            return View(viewModel);
         }
-        
+
+        [HttpPost]
+        [ActionName("Index")]
+        [ValidateAntiForgeryToken]
+        public ActionResult IndexAddCharacter(Models.CharacterSheet.IndexViewModel viewModel)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var newCharacter = CreateCharacter(viewModel.CreateCharacter);
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (DataException)
+            {
+                ModelState.AddModelError("", "Creation failed - an error occurred while trying to save changes");
+            }
+
+            var newViewModel = PrepareIndexViewModel();
+            newViewModel.IsModalOpen = true;
+            newViewModel.CreateCharacter = viewModel.CreateCharacter;
+            return View(newViewModel);
+        }
+
         // GET: CharacterSheets/Details/5
         public ActionResult Details(int? id)
         {
@@ -46,111 +135,76 @@ namespace Campaigns.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
-            if (characterSheet == null)
+
+            var character = _rules.GetCharacter(id.Value);
+            if (character == null)
             {
                 return HttpNotFound();
             }
 
-            return View(_service.AddCalculatedStatisticsTo(characterSheet));
+            var viewModel = new ViewEditCharacterViewModel
+            {
+                IsEditing = false,
+                Character = PrepareCharacterViewModel(character)
+            };
+
+            return View(viewModel);
         }
 
-        // GET: CharacterSheets/Create
-        public ActionResult Create([Bind(Exclude = "Id")] CharacterSheet characterSheet)
-        {
-            if (null == characterSheet)
-            {
-                characterSheet = _service.CreateCharacterSheet();
-            }
-            else
-            {
-                _service.EnsureValid(characterSheet);
-            }
-
-            //newCharacterSheet = DtoHelper.UpdateFromDTO(_charDb, newCharacterSheet, characterSheetInfo);
-            return View(_service.AddCalculatedStatisticsTo(characterSheet));
-        }
-
-        // POST: CharacterSheets/Create
-        [HttpPost]
-        [ActionName("Create")]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateConfirm([Bind(Exclude = "Id")] CharacterSheet characterSheet)
-        {
-            //var newCharacterSheet = DtoHelper.CreateFromDTO(_charDb, characterSheet);
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    _service.EnsureValid(characterSheet);
-                    _charDb.CharacterSheets.Add(characterSheet);
-                    _charDb.SaveChanges();
-                    return RedirectToAction("Details", new { Id = characterSheet.Id });
-                }
-            }
-            catch (DataException)
-            {
-                ModelState.AddModelError("", "Save failed - an error occurred while trying to save changes");
-            }
-
-            characterSheet = _service.AddCalculatedStatisticsTo(characterSheet);
-
-            //var characterSheetEx = ToExperimental(characterSheet);
-            //_charDb.CharacterSheetsEx.Add(characterSheetEx);
-            //_charDb.SaveChanges();
-
-            return View(characterSheet);
-        }
-
-        // GET: CharacterSheets/Edit/5
         public ActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
-            if (characterSheet == null)
+
+            var character = _rules.GetCharacter(id.Value);
+            if (character == null)
             {
                 return HttpNotFound();
             }
-            return View(_service.AddCalculatedStatisticsTo(characterSheet));
+            
+            var viewModel = new ViewEditCharacterViewModel
+            {
+                IsEditing = true,                
+                Character = PrepareCharacterViewModel(character)
+            };
+
+            return View(viewModel);
         }
 
-        // POST: CharacterSheets/Edit/5
-        [HttpPost, ActionName("Edit")]
-        [ValidateAntiForgeryToken]
-        public ActionResult EditConfirmed(int? id)
-        {
-            // TODO: track only fields that change? send viewmodel through and use http://automapper.org/ ?
-            // Use db.Entry on the entity instance to set its state to Unchanged, and then set 
-            // Property("PropertyName").IsModified to true on each entity property that is included in the view model
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
+        //[HttpPost, ActionName("Edit")]
+        //[ValidateAntiForgeryToken]
+        //public ActionResult EditConfirmed(int? id)
+        //{
+        //    // TODO: track only fields that change? send viewmodel through and use http://automapper.org/ ?
+        //    // Use db.Entry on the entity instance to set its state to Unchanged, and then set 
+        //    // Property("PropertyName").IsModified to true on each entity property that is included in the view model
+        //    if (id == null)
+        //    {
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    }
 
-            var characterSheetToUpdate = _charDb.CharacterSheets.Find(id);
-            _charDb.Entry(characterSheetToUpdate).State = EntityState.Detached;
-            if (TryUpdateModel(characterSheetToUpdate))
-            {
-                _service.EnsureValid(characterSheetToUpdate);
-                try
-                {
-                    // create new entry, dont update existing entry
-                    _charDb.CharacterSheets.Add(characterSheetToUpdate);
-                    _charDb.SaveChanges();
-                    return RedirectToAction("Details", new { Id = characterSheetToUpdate.Id });
-                }
-                catch (DataException)
-                {
-                    ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
-                }
-            }
-            return View(_service.AddCalculatedStatisticsTo(characterSheetToUpdate));
-        }
+        //    var characterSheetToUpdate = _charDb.CharacterSheets.Find(id);
+        //    _charDb.Entry(characterSheetToUpdate).State = EntityState.Detached;
+        //    if (TryUpdateModel(characterSheetToUpdate))
+        //    {
+        //        _service.EnsureValid(characterSheetToUpdate);
+        //        try
+        //        {
+        //            // create new entry, dont update existing entry
+        //            _charDb.CharacterSheets.Add(characterSheetToUpdate);
+        //            _charDb.SaveChanges();
+        //            return RedirectToAction("Details", new { Id = characterSheetToUpdate.Id });
+        //        }
+        //        catch (DataException)
+        //        {
+        //            ModelState.AddModelError("", "Edit failed - an error occurred while trying to save changes");
+        //        }
+        //    }
+        //    return View(_service.AddCalculatedStatisticsTo(characterSheetToUpdate));
+        //}
 
-        // GET: CharacterSheets/Delete/5
         public ActionResult Delete(int? id, bool? saveChangesError = false)
         {
             if (id == null)
@@ -161,28 +215,21 @@ namespace Campaigns.Controllers
             {
                 ViewBag.ErrorMessage = "Delete failed - an error occurred while trying to save changes";
             }
-            CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
-            if (characterSheet == null)
+            Character character = _rules.GetCharacter(id.Value);
+            if (character == null)
             {
                 return HttpNotFound();
             }
-            return View(_service.AddCalculatedStatisticsTo(characterSheet));
+            return View(PrepareCharacterViewModel(character));
         }
-
-        // POST: CharacterSheets/Delete/5
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
             try
             {
-                CharacterSheet characterSheet = _charDb.CharacterSheets.Find(id);
-                foreach (var o in characterSheet.AbilityAllocations.ToList())
-                    _charDb.Entry(o).State = EntityState.Deleted;
-                foreach (var o in characterSheet.SkillAllocations.ToList())
-                    _charDb.Entry(o).State = EntityState.Deleted;
-                _charDb.CharacterSheets.Remove(characterSheet);
-                _charDb.SaveChanges();
+                _rules.DeleteCharacterById(id);
             }
             catch (DataException)
             {
@@ -196,7 +243,6 @@ namespace Campaigns.Controllers
         {
             if (disposing)
             {
-                _charDb.Dispose();
             }
             base.Dispose(disposing);
         }

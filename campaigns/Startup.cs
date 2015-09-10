@@ -2,13 +2,19 @@
 using Autofac.Core;
 using Autofac.Integration.Mvc;
 using Autofac.Integration.SignalR;
+using Autofac.Integration.WebApi;
+using Campaigns.Core.Data;
+using Campaigns.Model.Data;
 using Campaigns.Models.Sessions;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Owin;
 using Owin;
+using Services.Rules;
+using System;
 using System.Reflection;
+using System.Web.Http;
 using System.Web.Mvc;
 
 [assembly: OwinStartup(typeof(Campaigns.Startup))]
@@ -24,10 +30,16 @@ namespace Campaigns
 
             var builder = new ContainerBuilder();
 
-            // STANDARD MVC SETUP:
+            // Get your HttpConfiguration.
+            var config = GlobalConfiguration.Configuration;
 
-            // Register your MVC controllers.
+            // Register MVC controllers.
             builder.RegisterControllers(typeof(MvcApplication).Assembly);
+            // Register Web API controllers.
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+
+            // Register the Autofac filter provider.
+            //builder.RegisterWebApiFilterProvider(config);
 
             // Register your SignalR hubs.
             builder.RegisterHubs(Assembly.GetExecutingAssembly());
@@ -40,6 +52,7 @@ namespace Campaigns
             var container = builder.Build();
             DependencyResolver.SetResolver(new Autofac.Integration.Mvc.AutofacDependencyResolver(container));
             GlobalHost.DependencyResolver = new Autofac.Integration.SignalR.AutofacDependencyResolver(container);
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
             // OWIN MVC SETUP:
 
@@ -65,6 +78,29 @@ namespace Campaigns
         }
     }
 
+    public class CampaignsRepositories : IDisposable
+    {
+        private CampaignsDbContext _dbContext = new CampaignsDbContext();
+
+        public IEntityRepository<Campaigns.Model.Attribute> Attributes { get; private set; }
+        public IEntityRepository<Campaigns.Model.AttributeContribution> AttributeContributions { get; set; }
+        public IEntityRepository<Campaigns.Model.CharacterSheet> CharacterSheets { get; set; }
+        public IEntityRepository<Campaigns.Model.Character> Characters { get; set; }
+
+        public CampaignsRepositories()
+        {
+            Attributes = new EFEntityRepository<Campaigns.Model.Attribute>(_dbContext, _dbContext.Attributes);
+            AttributeContributions = new EFEntityRepository<Campaigns.Model.AttributeContribution>(_dbContext, _dbContext.AttributeContributions);
+            CharacterSheets = new EFEntityRepository<Campaigns.Model.CharacterSheet>(_dbContext, _dbContext.CharacterSheets);
+            Characters = new EFEntityRepository<Campaigns.Model.Character>(_dbContext, _dbContext.Characters);
+        }
+
+        public void Dispose()
+        {
+            _dbContext.Dispose();
+        }
+    }
+
     public class CampaignsModule : Autofac.Module
     {
         private static IHubConnectionContext<dynamic> ResolveHubClients(IComponentContext ctx)
@@ -77,11 +113,41 @@ namespace Campaigns
 
         protected override void Load(ContainerBuilder builder)
         {
+            //
+            // Data layer
+            //
+
+            builder.RegisterType<CampaignsRepositories>()
+                .InstancePerLifetimeScope();
+            builder.Register(c => c.Resolve<CampaignsRepositories>().Attributes)
+                .As<IEntityStore<Campaigns.Model.Attribute>>()
+                .As<IEntityRepository<Campaigns.Model.Attribute>>();
+            builder.Register(c => c.Resolve<CampaignsRepositories>().AttributeContributions)
+                .As<IEntityStore<Campaigns.Model.AttributeContribution>>()
+                .As<IEntityRepository<Campaigns.Model.AttributeContribution>>();
+            builder.Register(c => c.Resolve<CampaignsRepositories>().CharacterSheets)
+                .As<IEntityStore<Campaigns.Model.CharacterSheet>>()
+                .As<IEntityRepository<Campaigns.Model.CharacterSheet>>();
+            builder.Register(c => c.Resolve<CampaignsRepositories>().Characters)
+                .As<IEntityStore<Campaigns.Model.Character>>()
+                .As<IEntityRepository<Campaigns.Model.Character>>();
+
+            //
+            // Service Layer
+            //
+
+            builder.RegisterType<RulesService>().As<IRulesService>();
+
             builder.RegisterType<SessionService>()
                 .WithParameter(ResolvedParameter.ForNamed<IHubConnectionContext<dynamic>>("SessionHubClients"))
                 .As<ISessionService>()
                 .SingleInstance();
 
+            //
+            // Application Layer
+            //
+
+            // Session Hub
             builder.Register(ResolveHubClients).Named<IHubConnectionContext<dynamic>>("SessionHubClients"); ;
 
             base.Load(builder);

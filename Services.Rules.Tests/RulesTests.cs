@@ -20,9 +20,10 @@ namespace Services.Rules.Tests
         InMemoryEntityRepository<Campaigns.Model.Attribute> _attributes;
         InMemoryEntityRepository<Campaigns.Model.AttributeContribution> _contributions;
         InMemoryEntityRepository<Campaigns.Model.CharacterSheet> _characterSheets;
+        InMemoryEntityRepository<Campaigns.Model.Character> _characters;
 
         RulesService _rules;
-        CharacterSpecification _gnomeAllocations;
+        IEnumerable<AttributeAllocation> _gnomeAllocations;
         CharacterUpdate _superStrongUpdate;
 
         private static Campaigns.Model.AttributeContribution Contrib(IEnumerable<AttributeContribution> contributions, string name, string category)
@@ -53,6 +54,8 @@ namespace Services.Rules.Tests
             _contributions.AddForeignStore(_attributes);
 
             _characterSheets = new InMemoryEntityRepository<Campaigns.Model.CharacterSheet>();
+            _characters = new InMemoryEntityRepository<Campaigns.Model.Character>();
+            _characters.AddForeignStore(_characterSheets);
 
             _attributes.AddRange(new[]
             {
@@ -74,26 +77,21 @@ namespace Services.Rules.Tests
             _rules = new RulesService(
                 _attributes,
                 _contributions,
-                _characterSheets);
+                _characterSheets,
+                _characters);
 
-            _gnomeAllocations = new CharacterSpecification
+            _gnomeAllocations = new []
             {
-                Attributes = new[]
-                {
-                    Attrib("gnome", "race"),
-                },
-                Allocations = new[]
-                {
-                    Attrib("str", "abilities").ConstantContributionFrom(null, 8),
-                    Attrib("int", "abilities").ConstantContributionFrom(null, 8),
-                }
+                new AttributeAllocation { Attribute = Attrib("gnome", "race") },
+                new AttributeAllocation { Attribute = Attrib("str", "abilities"), Value = 8 },
+                new AttributeAllocation { Attribute = Attrib("int", "abilities"), Value = 8 },
             };
 
             _superStrongUpdate = new CharacterUpdate
             {
-                AddedAllocations = new []
+                AddedOrUpdatedAllocations = new []
                 {
-                    Attrib("str", "abilities").ConstantContributionFrom(null, 20),
+                    new AttributeAllocation { Attribute = Attrib("str", "abilities"), Value = 20 },
                 }
             };
         }
@@ -106,7 +104,8 @@ namespace Services.Rules.Tests
         [TestMethod]
         public void TestSimpleCharacterCreationWithSpecification()
         {
-            var characterSheet = _rules.CreateCharacterSheet(_gnomeAllocations);
+            var character = _rules.CreateCharacter("", "", _gnomeAllocations);
+            var characterSheet = character.Sheet;
             
             Assert.AreEqual(8, AttribValue(characterSheet.AttributeValues, "str", "abilities").Value);
             Assert.AreEqual(10, AttribValue(characterSheet.AttributeValues, "int", "abilities").Value);
@@ -118,30 +117,33 @@ namespace Services.Rules.Tests
         [TestMethod]
         public void TestSimpleCharacterUpdate()
         {
-            var orig = _rules.CreateCharacterSheet(_gnomeAllocations);
-            var updated = _rules.UpdateCharacterSheet(orig, _superStrongUpdate);
+            var orig = _rules.CreateCharacter("", "", _gnomeAllocations);
+            var updated = _rules.UpdateCharacter(orig, _superStrongUpdate);
+            var updatedSheet = updated.Sheet;
 
-            Assert.AreEqual(20, AttribValue(updated.AttributeValues, "str", "abilities").Value);
-            Assert.AreEqual(10, AttribValue(updated.AttributeValues, "int", "abilities").Value);
+            Assert.AreEqual(20, AttribValue(updatedSheet.AttributeValues, "str", "abilities").Value);
+            Assert.AreEqual(10, AttribValue(updatedSheet.AttributeValues, "int", "abilities").Value);
 
-            Assert.AreEqual(5, AttribValue(updated.AttributeValues, "str", "ability-mods").Value);
-            Assert.AreEqual(0, AttribValue(updated.AttributeValues, "int", "ability-mods").Value);
+            Assert.AreEqual(5, AttribValue(updatedSheet.AttributeValues, "str", "ability-mods").Value);
+            Assert.AreEqual(0, AttribValue(updatedSheet.AttributeValues, "int", "ability-mods").Value);
         }
 
         [TestMethod]
         public void TestCharacterDiff()
         {
-            var orig = _rules.CreateCharacterSheet(_gnomeAllocations);
-            var updated = _rules.UpdateCharacterSheet(orig, _superStrongUpdate);
+            var orig = _rules.CreateCharacter("", "", _gnomeAllocations);
+            var origSheet = orig.Sheet;
+            var updated = _rules.UpdateCharacter(orig, _superStrongUpdate);
+            var updatedSheet = updated.Sheet;
 
-            var diff = CharacterSheet.Diff(orig, updated);
+            var diff = CharacterSheet.Diff(origSheet, updatedSheet);
 
-            Assert.IsNull(diff.RemovedAttributes?.FirstOrDefault());
+            Assert.IsNull(diff.RemovedAllocations?.FirstOrDefault());
             Assert.IsNull(diff.RemovedAllocations?.FirstOrDefault());
 
-            foreach (var contrib in _superStrongUpdate.AddedAllocations)
+            foreach (var contrib in _superStrongUpdate.AddedOrUpdatedAllocations)
             {
-                Assert.IsTrue(diff.AddedAllocations.Contains(contrib));
+                Assert.IsTrue(diff.AddedOrUpdatedAllocations.Contains(contrib));
             }
         }
     }

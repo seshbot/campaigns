@@ -11,13 +11,13 @@
         console.log('getting rules data...');
 
         return {
-            getRules: getRules,
+            getCategoryAttributes: getCategoryAttributes,
         };
 
         // public interface
 
-        function getRules() {
-            var request = $http.get(apiUrl);
+        function getCategoryAttributes(category) {
+            var request = $http.get(apiUrl + '/' + category);
 
             return request.then(handleSuccess, handleError);
         };

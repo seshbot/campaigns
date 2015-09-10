@@ -21,6 +21,37 @@ namespace Services.Rules.Data
             return db.AsQueryable.Where(c => c.TargetId == target.Id);
         }
         
+        public static Campaigns.Model.Attribute GetAttribute(this IEntityStore<Campaigns.Model.Attribute> db, string name, string category)
+        {
+            return db.AsQueryable.FirstOrDefault(a =>
+                0 == string.Compare(a.Name, name, true) &&
+                0 == string.Compare(a.Category, category, true));
+        }
+
+        public static IQueryable<Campaigns.Model.Attribute> GetAttributesInCategory(this IEntityStore<Campaigns.Model.Attribute> db, string category)
+        {
+            return db.AsQueryable.Where(a => 0 == string.Compare(a.Category, category, true));
+        }
+
+        public static IQueryable<Campaigns.Model.Attribute> GetStandardAttributes(this IEntityStore<Campaigns.Model.Attribute> db)
+        {
+            return db.AsQueryable.Where(a => a.IsStandard);
+        }
+
+        public static IQueryable<Campaigns.Model.AttributeContribution> GetContributionsToAttribute(this IEntityStore<Campaigns.Model.AttributeContribution> db, int id)
+        {
+            return db.AsQueryable.Where(c => c.TargetId == id);
+        }
+
+        public static IQueryable<Campaigns.Model.AttributeContribution> GetContributionsFromAttribute(this IEntityStore<Campaigns.Model.AttributeContribution> db, int id)
+        {
+            return db.AsQueryable.Where(c => c.SourceId == id);
+        }
+
+        //
+        // DEPRECATED
+        //
+
         public static Campaigns.Model.Attribute GetAttribute(this CampaignsDbContext db, string name, string category)
         {
             return db.Attributes

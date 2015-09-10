@@ -17,7 +17,7 @@ namespace Services.Rules
         IEntityStore<Campaigns.Model.Attribute> _attributesDb;
         IEntityStore<AttributeContribution> _contributionsDb;
 
-        CharacterSpecification _calculationParams;
+        IEnumerable<AttributeAllocation> _allocations;
 
         InMemoryRules _memDb = new InMemoryRules();
 
@@ -26,13 +26,13 @@ namespace Services.Rules
         Campaigns.Model.Attribute GetAttributeById(int id)
         {
             return _attributesDb.GetById(id)
-                ?? _calculationParams.Attributes.FirstOrDefault(a => a.Id == id);
+                ?? _allocations.FirstOrDefault(a => a.Attribute.Id == id).Attribute;
         }
 
         public CalculationRules(
             IEntityStore<Campaigns.Model.Attribute> attributesDb,
             IEntityStore<AttributeContribution> contributionsDb)
-            : this(attributesDb, contributionsDb, null)
+            : this(attributesDb, contributionsDb, new List<AttributeAllocation>())
         {
         }
 
@@ -40,27 +40,35 @@ namespace Services.Rules
         public CalculationRules(
             IEntityStore<Campaigns.Model.Attribute> attributesDb,
             IEntityStore<AttributeContribution> contributionsDb,
-            CharacterSpecification calculationParams)
+            IEnumerable<AttributeAllocation> allocations)
         {
+            if (null == attributesDb) throw new ArgumentNullException("attributesDb");
+            if (null == contributionsDb) throw new ArgumentNullException("contributionsDb");
+            if (null == allocations) throw new ArgumentNullException("allocations");
+
             _attributesDb = attributesDb;
             _contributionsDb = contributionsDb;
-            _calculationParams = calculationParams;
+            _allocations = allocations;
 
             foreach (var attrib in _attributesDb.AsQueryable.Where(IsStandard))
             {
                 _memDb.AddAttribute(attrib);
             }
-
-            if (null != calculationParams)
+            
+            foreach (var alloc in _allocations)
             {
-                foreach (var attrib in _calculationParams.Attributes)
+                if (!_memDb.Attributes.Contains(alloc.Attribute))
                 {
-                    _memDb.AddAttribute(attrib);
+                    _memDb.AddAttribute(alloc.Attribute);
                 }
 
-                foreach (var contrib in _calculationParams.Allocations)
+                if (alloc.Value.HasValue)
                 {
-                    AddContribution(contrib);
+                    var contribution =
+                        AttributeContributions.ConstantContributionTo(
+                            null, alloc.Attribute, alloc.Value.Value);
+
+                    _memDb.AddContribution(contribution);
                 }
             }
         }

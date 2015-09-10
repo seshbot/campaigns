@@ -44,8 +44,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=3.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.3.4.0\lib\net40\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.3.5.0\lib\net40\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Autofac.Integration.Mvc, Version=3.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -54,6 +54,10 @@
     </Reference>
     <Reference Include="Autofac.Integration.SignalR, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.SignalR.3.0.2\lib\net40\Autofac.Integration.SignalR.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi, Version=3.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.WebApi2.3.4.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AutoMapper, Version=4.0.4.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
@@ -231,30 +235,25 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\Api\Rules\RulesV2Controller.cs" />
+    <Compile Include="Controllers\Api\Rules\RulesController.cs" />
     <Compile Include="Controllers\Api\Sessions\SessionsController.cs" />
     <Compile Include="Controllers\CharacterSheetsController.cs" />
-    <Compile Include="Controllers\Api\Rules\RulesV1Controllers.cs" />
     <Compile Include="Controllers\SessionsController.cs" />
     <Compile Include="GlimpseSecurityPolicy.cs" />
     <Compile Include="Helpers\DataHelpers.cs" />
     <Compile Include="Helpers\HtmlHelpers.cs" />
     <Compile Include="Models\API\AttributeViewModel.cs" />
-    <Compile Include="Models\DnD5\LevelInfo.cs" />
-    <Compile Include="Models\DnD5\RaceInfo.cs" />
-    <Compile Include="Models\DAL\Rules.cs" />
+    <Compile Include="Models\CharacterSheet\CreateCharacterViewModel.cs" />
     <Compile Include="Models\API\CharacterSheetViewModel.cs" />
-    <Compile Include="Models\DAL\CharacterSheet.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\CharacterSheetDbContext.cs" />
-    <Compile Include="Models\CharacterSheetInitializer.cs" />
-    <Compile Include="Models\CharacterSheetService.cs" />
-    <Compile Include="Models\DnD5\RulesDescription.cs" />
+    <Compile Include="Models\CharacterSheet\CharacterViewModel.cs" />
+    <Compile Include="Models\CharacterSheet\ViewEditCharacterViewModel.cs" />
+    <Compile Include="Models\CharacterSheet\IndexViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Sessions\DiceService.cs" />
@@ -339,19 +338,15 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\CharacterSheets\Create.cshtml" />
     <Content Include="Views\CharacterSheets\Delete.cshtml" />
     <Content Include="Views\CharacterSheets\Details.cshtml" />
     <Content Include="Views\CharacterSheets\Edit.cshtml" />
     <Content Include="Views\CharacterSheets\Index.cshtml" />
-    <Content Include="Views\CharacterSheets\_BeginCreateModal.cshtml" />
     <Content Include="Views\Sessions\Index.cshtml" />
     <Content Include="Views\Sessions\Join.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\CharacterSheet\Edit\" />
-    <Folder Include="Models\CharacterSheet\View\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />

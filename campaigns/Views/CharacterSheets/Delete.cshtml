@@ -1,4 +1,4 @@
-﻿@model Campaigns.Models.DAL.CharacterSheet
+﻿@model Campaigns.Models.CharacterSheet.CharacterViewModel
 
 @{
     ViewBag.Title = "Delete";
@@ -12,27 +12,19 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Description.Name)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Description.Name)
+            @Html.DisplayFor(model => model.Name)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Description.Text)
+            @Html.DisplayNameFor(model => model.RaceName)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Description.Text)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Xp)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Xp)
+            @Html.DisplayFor(model => model.RaceName)
         </dd>
 
         <dt>
@@ -44,11 +36,11 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.DerivedStatistics.ProficiencyBonus)
+            @Html.DisplayNameFor(model => model.ShortDescription)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.DerivedStatistics.ProficiencyBonus)
+            @Html.DisplayFor(model => model.ShortDescription)
         </dd>
 
     </dl>

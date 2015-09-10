@@ -37,6 +37,14 @@ namespace Campaigns.Core.Testing
             }
         }
 
+        public IQueryable<T> AsQueryableNoTracking
+        {
+            get
+            {
+                return _entities.Values.AsQueryable();
+            }
+        }
+
         public void Add(T entity)
         {
             if (!entity.IsTemporary())

@@ -1,15 +1,11 @@
 ﻿using AutoMapper;
 using Campaigns.Core.Data;
 using Campaigns.Model.Data;
-using Campaigns.Models;
 using Campaigns.Models.API;
 using Services.Rules;
 using Services.Rules.Data;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 
@@ -17,7 +13,7 @@ namespace Campaigns.Controllers.API.Rules
 {
     static class ViewModelExtensions
     {
-        public static AttributeViewModel CreateViewModel(this CampaignsDbContext db, Campaigns.Model.Attribute attribute)
+        public static AttributeViewModel CreateViewModel(this IEntityStore<Campaigns.Model.AttributeContribution> db, Campaigns.Model.Attribute attribute)
         {
             if (null == attribute)
                 return null;
@@ -32,47 +28,57 @@ namespace Campaigns.Controllers.API.Rules
             return viewModel;
         }
 
-        public static Models.API.CharacterSheetViewModel CreateViewModel(Campaigns.Model.CharacterSheet characterSheet)
-        {
-            if (null == characterSheet)
-                return null;
+        //public static Models.API.CharacterSheetViewModel CreateViewModel(Campaigns.Model.CharacterSheet characterSheet)
+        //{
+        //    if (null == characterSheet)
+        //        return null;
 
-            Mapper.CreateMap<Campaigns.Model.CharacterSheet, Models.API.CharacterSheetViewModel>();
-            var viewModel = Mapper.Map<Models.API.CharacterSheetViewModel>(characterSheet);
-            return viewModel;
-        }
+        //    Mapper.CreateMap<Campaigns.Model.CharacterSheet, Models.API.CharacterSheetViewModel>();
+        //    var viewModel = Mapper.Map<Models.API.CharacterSheetViewModel>(characterSheet);
+        //    return viewModel;
+        //}
     }
 
-    [RoutePrefix("api/v2/rules")]
-    public class RulesV2Controller : ApiController
+    [RoutePrefix("api/rules")]
+    public class RulesController : ApiController
     {
-        private CampaignsDbContext _rulesContext = new CampaignsDbContext();
+        IEntityStore<Campaigns.Model.Attribute> _attributesDb;
+        IEntityStore<Campaigns.Model.AttributeContribution> _contributionsDb;
+
+        public RulesController(
+            IEntityStore<Campaigns.Model.Attribute> attributesDb,
+            IEntityStore<Campaigns.Model.AttributeContribution> contributionsDb)
+        {
+            _attributesDb = attributesDb;
+            _contributionsDb = contributionsDb;
+        }
 
         [ResponseType(typeof(IEnumerable<AttributeViewModel>))]
         [Route("attributes")]
-        public IHttpActionResult GetAll()
+        public IHttpActionResult GetAllAttributes()
         {
-            return Ok(_rulesContext.Attributes.Select(_rulesContext.CreateViewModel));
+            var results = _attributesDb.AsQueryable.Select(_contributionsDb.CreateViewModel);
+            return Ok(results);
         }
 
         [ResponseType(typeof(AttributeViewModel))]
         [Route("attributes/{id:int}")]
-        public IHttpActionResult Get(int id)
+        public IHttpActionResult GetAttribute(int id)
         {
-            var attrib = _rulesContext.Attributes.FirstOrDefault(a => a.Id == id);
+            var attrib = _attributesDb.GetById(id);
             if (null == attrib)
             {
                 return NotFound();
             }
 
-            return Ok(_rulesContext.CreateViewModel(attrib));
+            return Ok(_contributionsDb.CreateViewModel(attrib));
         }
 
         [ResponseType(typeof(IEnumerable<AttributeCategoryViewModel>))]
         [Route("categories")]
         public IHttpActionResult GetCategories()
         {
-            var categories = _rulesContext.Attributes
+            var categories = _attributesDb.AsQueryable
                 .GroupBy(a => a.Category)
                 .Select(g => new AttributeCategoryViewModel { Name = g.Key, AttributeCount = g.Count() });
 
@@ -81,48 +87,52 @@ namespace Campaigns.Controllers.API.Rules
 
         [ResponseType(typeof(IEnumerable<AttributeViewModel>))]
         [Route("{category}")]
-        public IHttpActionResult Get(string category)
+        public IHttpActionResult GetCategory(string category)
         {
-            var attribs = _rulesContext.GetAttributesInCategory(category);
+            var attribs = _attributesDb.GetAttributesInCategory(category);
             if (null == attribs || attribs.Count() == 0)
             {
                 return NotFound();
             }
-            return Ok(attribs.Select(_rulesContext.CreateViewModel));
+            return Ok(attribs.Select(_contributionsDb.CreateViewModel));
         }
 
         [ResponseType(typeof(AttributeViewModel))]
-        [Route("{category}/{name}")]
-        public IHttpActionResult Get(string category, string name)
+        [Route("{category}/{id:int}")]
+        public IHttpActionResult GetAttribute(string category, int id)
         {
-            var attrib = _rulesContext.GetAttribute(name, category);
+            var attrib = _attributesDb.AsQueryable.FirstOrDefault(a => 
+                a.Id == id && 0 == string.Compare(category, a.Category, true));
             if (null == attrib)
             {
                 return NotFound();
             }
 
-            return Ok(_rulesContext.CreateViewModel(attrib));
+            return Ok(_contributionsDb.CreateViewModel(attrib));
+        }
+
+        [ResponseType(typeof(AttributeViewModel))]
+        [Route("{category}/{name}")]
+        public IHttpActionResult GetAttribute(string category, string name)
+        {
+            var attrib = _attributesDb.GetAttribute(name, category);
+            if (null == attrib)
+            {
+                return NotFound();
+            }
+
+            return Ok(_contributionsDb.CreateViewModel(attrib));
         }
     }
 
-    [RoutePrefix("api/v2/characters")]
+    [RoutePrefix("api/characters")]
     public class CharactersV2Controller : ApiController
     {
-        private CampaignsDbContext _dbContext = new CampaignsDbContext();
-
-        private EFEntityRepository<Campaigns.Model.Attribute> _attributesDb;
-        private EFEntityRepository<Campaigns.Model.AttributeContribution> _contributionsDb;
-        private EFEntityRepository<Campaigns.Model.CharacterSheet> _sheetsDb;
-
         private IRulesService _rules;
 
-        public CharactersV2Controller()
+        public CharactersV2Controller(IRulesService rules)
         {
-            _attributesDb = new EFEntityRepository<Campaigns.Model.Attribute>(_dbContext, _dbContext.Attributes);
-            _contributionsDb = new EFEntityRepository<Campaigns.Model.AttributeContribution>(_dbContext, _dbContext.AttributeContributions);
-            _sheetsDb = new EFEntityRepository<Campaigns.Model.CharacterSheet>(_dbContext, _dbContext.CharacterSheets);
-
-            _rules = new RulesService(_attributesDb, _contributionsDb, _sheetsDb);
+            _rules = rules;
         }
         
         //[ResponseType(typeof(Models.API.CharacterSheetViewModel))]

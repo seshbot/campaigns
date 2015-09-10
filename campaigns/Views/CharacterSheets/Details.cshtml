@@ -1,22 +1,22 @@
-﻿@model Campaigns.Models.DAL.CharacterSheet
+﻿@model Campaigns.Models.CharacterSheet.ViewEditCharacterViewModel
 
 @{
     ViewBag.Title = "Details";
-    var pageTitle = Html.DisplayFor(model => model.Description.Name);
+    var pageTitle = Html.DisplayFor(model => model.Character.Name);
     if (MvcHtmlString.IsNullOrEmpty(pageTitle))
     {
         pageTitle = MvcHtmlString.Create("Unnamed");
     }
 }
 
-<p/>
+<p />
 <div ng-app="app">
-    <div ng-controller="CharacterSheetDetailsCtrl" ng-init="init(@Model.Id)">
+    <div ng-controller="CharacterSheetDetailsCtrl">
         <div ng-hide="loaded" ng-cloak>Loading...</div>
         <div class="panel panel-danger" ng-show="errorMessage" ng-cloak>
             <div class="panel-heading" role="tab">
                 <h4 class="panel-title" ng-mou>
-                    <strong>Error: </strong> {{errorMessage}} 
+                    <strong>Error: </strong> {{errorMessage}}
                     <a class="collapsed pull-right" role="button" data-toggle="collapse" href="#errorMessageDetail">
                         more &raquo;
                     </a>
@@ -26,242 +26,239 @@
                 <div class="panel-body" style="white-space: pre-line">{{errorMessageDetail}}</div>
             </div>
         </div>
-        @*<ul ng-cloak>
-            <li ng-repeat="ability in abilities">
-                <div ng-mouseenter="$parent.selectedAbility = ability" ng-mouseleave="$parent.selectedAbility = {}">
-                    {{ability.shortName}}
-                </div>
-            </li>
-        </ul>
-        <table class="table">
-            <tr ng-repeat="skill in skills" ng-class="{'active': $parent.selectedAbility.id == skill.ability.id}" ng-mouseenter="$parent.selectedSkill = skill" ng-mouseleave="$parent.selectedSkill = {}">
-                <td>{{skill.name}}</td>
-            </tr>
-        </table>
-        <div ng-mouseenter="x=3" ng-init="x=0">
-            {{selectedAbility.name}} {{selectedSkill.name}}
-        </div>*@
 
-<div class="row">
-    <div class="col-md-3">
-        <h4>@pageTitle<br/><small>@Model.Description.ShortText <a class="pull-right" data-toggle="collapse" href="#characterDescription">more &raquo;</a></small></h4>
-    </div>
-    <div class="col-md-9">
         <div class="row">
-            <div class="col-md-4">
-                <h4>Level @Html.DisplayFor(model => model.Level) @Html.DisplayFor(model => model.Class.Name)<br /><small>Class</small></h4>
+            <div class="col-md-3">
+                <h4>@pageTitle<br /><small>@Model.Character.ShortDescription <a class="pull-right" data-toggle="collapse" href="#characterDescription">more &raquo;</a></small></h4>
             </div>
-            <div class="col-md-4">
-                <h4>Noble<br /><small>Background</small></h4>
-            </div>
-            <div class="col-md-4">
-                <h4>Seshbot<br /><small>Player</small></h4>
-            </div>
-        </div>
-        <div class="row" style="padding-top:16px;">
-            <div class="col-md-4">
-                <h4>@Html.DisplayFor(model => model.Race.Name)<br /><small>Race</small></h4>
-            </div>
-            <div class="col-md-4">
-                <h4>Neutral Good<br /><small>Alignment</small></h4>
-            </div>
-            <div class="col-md-4">
-                <h4>@Html.DisplayFor(model => model.Xp) XP<br /><small>Experience</small></h4>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="collapse" id="characterDescription">
-            <div class="well">
-                @Html.DisplayFor(model => model.Description.Text)
-            </div>
-        </div>
-    </div>
-</div>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <div class="row">
-            <div class="col-md-4">
-                @foreach (var ability in Model.DerivedStatistics.Abilities)
-                {
-                    <div style="padding-bottom: 1.2em" ng-mouseenter="selectedAbilityId = @ability.Allocation.Ability.Id" ng-mouseleave="selectedAbilityId = -1">
-                        <fieldset ng-class="{'text-success': selectedAbilityId == @ability.Allocation.Ability.Id}" style="border: 1px #ddd solid; border-radius: 3px;">
-                            <legend align="center" style="width: inherit; border: 0 #ddd solid; margin: 0 1em; padding: 0 2px; font-size: 1em">
-                                @ability.Allocation.Ability.ShortName
-                            </legend>
-                            <div class="text-center" style="margin-bottom: 20px">
-                                <h3>@ability.Modifier.ToString("+#;-#;0")</h3>
-                            </div>
-                            <div ng-class="{'selected': selectedAbilityId == @ability.Allocation.Ability.Id}" class="text-center muted" style="border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; border-top: 1px solid #ddd; padding: 6px">
-                                <span>@ability.Value</span>
-                            </div>
-                        </fieldset>
+            <div class="col-md-9">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h4>Level @Html.DisplayFor(model => model.Character.Level) @Html.DisplayFor(model => model.Character.ClassName)<br /><small>Class</small></h4>
                     </div>
-                }
+                    <div class="col-md-4">
+                        <h4>Noble<br /><small>Background</small></h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Seshbot<br /><small>Player</small></h4>
+                    </div>
+                </div>
+                <div class="row" style="padding-top:16px;">
+                    <div class="col-md-4">
+                        <h4>@Html.DisplayFor(model => model.Character.RaceName)<br /><small>Race</small></h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Neutral Good<br /><small>Alignment</small></h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>@*@Html.DisplayFor(model => model.Xp)*@ 300 XP<br /><small>Experience</small></h4>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-8">
-                <div class="panel panel-default">
-                    <table class="table table-striped table-hover">
-                        <tr><td width="20%" class="text-center">0</td><td><strong>Inspiration</strong></td></tr>
-                    </table>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="collapse" id="characterDescription">
+                    <div class="well">
+                        @Html.DisplayFor(model => model.Character.Description)
+                    </div>
                 </div>
-                <div class="panel panel-default">
-                    <table class="table table-striped table-hover">
-                        <tr>
-                            <td width="20%" class="text-center">@Model.DerivedStatistics.ProficiencyBonus</td>
-                            <td><strong>Proficiency Bonus</strong></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="panel panel-default">
-                    <table class="table table-striped table-hover">
-                        <tr><td width="20%" class="text-center">0</td><td><small>Strength</small></td></tr>
-                        <tr><td class="text-center">0</td><td><small>Dexterity</small></td></tr>
-                        <tr><td class="text-center">1</td><td><small>Constitution</small></td></tr>
-                        <tr><td class="text-center">3</td><td><small>Intelligence</small></td></tr>
-                        <tr><td class="text-center">0</td><td><small>Wisdom</small></td></tr>
-                        <tr><td class="text-center">0</td><td><small>Charisma</small></td></tr>
-                    </table>
-                    <div class="panel-footer text-center"><strong>Saving Throws</strong></div>
-                </div>
-                <div class="panel panel-default">
-                    <table class="table table-striped table-hover">
-                        @foreach (var skill in Model.DerivedStatistics.Skills)
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-md-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        @foreach (var ability in Model.Character.GetCategoryAttributeValues("abilities"))
                         {
-                            <tr ng-class="{'selected': selectedAbilityId == @skill.Allocation.Skill.Ability.Id}" ng-mouseenter="selectedAbilityId = @skill.Allocation.Skill.Ability.Id" ng-mouseleave="selectedAbilityId = -1">
-                                <td width="20%" class="text-center">@skill.Value</td><td><small>@skill.Allocation.Skill.Name</small> (@skill.Allocation.Skill.Ability.ShortName)</td>
-                            </tr>
-                        }
-                    </table>
-                    <div class="panel-footer text-center"><strong>Skills</strong></div>
+                            var abilityModifier = Model.Character.GetAttributeValue(ability.AttributeName, "ability-modifiers");
+
+                            <div style="padding-bottom: 1.2em" ng-mouseenter='selectedAbilityIds = ["@(ability.AttributeName)"]' ng-mouseleave="selectedAbilityIds = []">
+                                <fieldset ng-class='{"text-success": selectedAbilityIds.containsAny("@(ability.AttributeName)")}' style="border: 1px #ddd solid; border-radius: 3px;">
+                                    <legend align="center" style="width: inherit; border: 0 #ddd solid; margin: 0 1em; padding: 0 2px; font-size: 1em">
+                                        @ability.AttributeName
+                                    </legend>
+                                    <div class="text-center" style="margin-bottom: 20px">
+                                        <h3>@abilityModifier.ValueWithSign</h3>
+                                    </div>
+                                    <div ng-class='{"selected": selectedAbilityIds.containsAny("@(ability.AttributeName)")}' class="text-center muted" style="border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; border-top: 1px solid #ddd; padding: 6px">
+                                        <span>@ability.Value</span>
+                                    </div>
+                                </fieldset>
+                            </div>
+                                            }
+                    </div>
+                    <div class="col-md-8">
+                        <div class="panel panel-default">
+                            <table class="table table-striped table-hover">
+                                <tr><td width="20%" class="text-center">0</td><td><strong>Inspiration</strong></td></tr>
+                            </table>
+                        </div>
+                        <div class="panel panel-default">
+                            <table class="table table-striped table-hover">
+                                <tr>
+                                    <td width="20%" class="text-center">@*@Model.DerivedStatistics.ProficiencyBonus*@ 0</td>
+                                    <td><strong>Proficiency Bonus</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="panel panel-default">
+                            <table class="table table-striped table-hover">
+                                <tr><td width="20%" class="text-center">0</td><td><small>Strength</small></td></tr>
+                                <tr><td class="text-center">0</td><td><small>Dexterity</small></td></tr>
+                                <tr><td class="text-center">1</td><td><small>Constitution</small></td></tr>
+                                <tr><td class="text-center">3</td><td><small>Intelligence</small></td></tr>
+                                <tr><td class="text-center">0</td><td><small>Wisdom</small></td></tr>
+                                <tr><td class="text-center">0</td><td><small>Charisma</small></td></tr>
+                            </table>
+                            <div class="panel-footer text-center"><strong>Saving Throws</strong></div>
+                        </div>
+                        <div class="panel panel-default">
+                            <table class="table table-striped table-hover">
+                                @foreach (var skill in Model.Character.GetCategoryAttributeValues("skills"))
+                                {
+                                    var sourceIds = "[\"" + string.Join("\",\"", skill.Contributions.Select(c => c.SourceName)) + "\"]";
+                                    var sourcesNames = string.Join(", ", skill.Contributions.Select(c => c.SourceName));
+                                    <tr ng-class='{"selected": selectedAbilityIds.containsAny(@Html.Raw(sourceIds))}' ng-mouseenter='selectedAbilityIds = @Html.Raw(sourceIds)' ng-mouseleave="selectedAbilityIds = []">
+                                        <td width="20%" class="text-center">@skill.Value</td>
+                                        <td><small>@skill.AttributeName</small> (@sourcesNames)</td>
+                                    </tr>
+                                }
+                            </table>
+                            <div class="panel-footer text-center"><strong>Skills</strong></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="row">
             <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-body text-center">8</div>
-                    <div class="panel-footer text-center"><small><strong>AC</strong></small></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="panel panel-default">
+                            <div class="panel-body text-center">8</div>
+                            <div class="panel-footer text-center"><small><strong>AC</strong></small></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="panel panel-default">
+                            <div class="panel-body text-center">-1</div>
+                            <div class="panel-footer text-center"><small><strong>Initiative</strong></small></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="panel panel-default">
+                            <div class="panel-body text-center">30</div>
+                            <div class="panel-footer text-center"><small><strong>Speed</strong></small></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-body text-center">-1</div>
-                    <div class="panel-footer text-center"><small><strong>Initiative</strong></small></div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-body text-center">30</div>
-                    <div class="panel-footer text-center"><small><strong>Speed</strong></small></div>
-                </div>
-            </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-body text-center">...</div>
-            <div class="panel-footer text-center"><small><strong>Hit Points</strong></small></div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
                 <div class="panel panel-default">
                     <div class="panel-body text-center">...</div>
-                    <div class="panel-footer text-center"><small><strong>Hit Dice</strong></small></div>
+                    <div class="panel-footer text-center"><small><strong>Hit Points</strong></small></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-body text-center">...</div>
+                            <div class="panel-footer text-center"><small><strong>Hit Dice</strong></small></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-body text-center">...</div>
+                            <div class="panel-footer text-center"><small><strong>Death Saves</strong></small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <table class="table table-striped table-hover table-bordered">
+                                <tr><td>Short Sword</td><td>+2</td><td>Slashing</td></tr>
+                                <tr><td></td><td></td><td></td></tr>
+                            </table>
+                            <table class="table table-striped table-hover table-bordered">
+                                <tr><td></td></tr>
+                                <tr><td></td></tr>
+                                <tr><td></td></tr>
+                                <tr><td></td></tr>
+                            </table>
+                            <div class="panel-footer text-center"><small><strong>Attacks &amp; Spell-Casting</strong></small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-body text-center">...</div>
+                            <div class="panel-footer text-center"><small><strong>Equipment</strong></small></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="panel panel-default">
-                    <div class="panel-body text-center">...</div>
-                    <div class="panel-footer text-center"><small><strong>Death Saves</strong></small></div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="panel panel-default">
-                    <table class="table table-striped table-hover table-bordered">
-                        <tr><td>Short Sword</td><td>+2</td><td>Slashing</td></tr>
-                        <tr><td></td><td></td><td></td></tr>
+                    <table class="table table-striped table-hover">
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
                     </table>
-                    <table class="table table-striped table-hover table-bordered">
+                    <div class="panel-footer text-center"><small><strong>Personality Traits</strong></small></div>
+                </div>
+                <div class="panel panel-default">
+                    <table class="table table-hover">
                         <tr><td></td></tr>
                         <tr><td></td></tr>
                         <tr><td></td></tr>
                         <tr><td></td></tr>
                     </table>
-                    <div class="panel-footer text-center"><small><strong>Attacks &amp; Spell-Casting</strong></small></div>
+                    <div class="panel-footer text-center"><small><strong>Ideals</strong></small></div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
                 <div class="panel panel-default">
-                    <div class="panel-body text-center">...</div>
-                    <div class="panel-footer text-center"><small><strong>Equipment</strong></small></div>
+                    <table class="table table-hover">
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                    </table>
+                    <div class="panel-footer text-center"><small><strong>Bonds</strong></small></div>
+                </div>
+                <div class="panel panel-default">
+                    <table class="table table-hover">
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                    </table>
+                    <div class="panel-footer text-center"><small><strong>Flaws</strong></small></div>
+                </div>
+                <div class="panel panel-default">
+                    <table class="table table-hover">
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                        <tr><td></td></tr>
+                    </table>
+                    <div class="panel-footer text-center"><small><strong>Features and Traits</strong></small></div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="panel panel-default">
-            <table class="table table-striped table-hover">
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-            </table>
-            <div class="panel-footer text-center"><small><strong>Personality Traits</strong></small></div>
-        </div>
-        <div class="panel panel-default">
-            <table class="table table-hover">
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-            </table>
-            <div class="panel-footer text-center"><small><strong>Ideals</strong></small></div>
-        </div>
-        <div class="panel panel-default">
-            <table class="table table-hover">
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-            </table>
-            <div class="panel-footer text-center"><small><strong>Bonds</strong></small></div>
-        </div>
-        <div class="panel panel-default">
-            <table class="table table-hover">
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-            </table>
-            <div class="panel-footer text-center"><small><strong>Flaws</strong></small></div>
-        </div>
-        <div class="panel panel-default">
-            <table class="table table-hover">
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-                <tr><td></td></tr>
-            </table>
-            <div class="panel-footer text-center"><small><strong>Features and Traits</strong></small></div>
-        </div>
-    </div>
-</div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+        <p>
+            @if (Model.IsEditing)
+            {
+                <a href="#">Save</a>
+            }
+            else
+            {
+                @Html.ActionLink("Edit", "Edit", new { id = Model.Character.Id })
+            }
+            | @Html.ActionLink("Back to List", "Index")
+        </p>
 
     </div>
 </div>
@@ -269,11 +266,14 @@
 @section NavLinks {
     <li>
         <div class="btn-group navbar-btn">
-            <button class="btn btn-default" onclick="location.href='@Url.Action("Edit", new { id = Model.Id })'">Edit</button>
-            <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
-            <ul class="dropdown-menu">
-                <li><a href="#">Level Up</a></li>
-            </ul>
+            <button class="btn btn-default" onclick="location.href='@Url.Action("Edit", new { id = Model.Character.Id })'">Edit</button>
+            @if (Model.IsEditing)
+            {
+                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Level Up</a></li>
+                </ul>
+            }
         </div>
     </li>
 }
@@ -282,4 +282,18 @@
     @Scripts.Render("~/Scripts/angular.js")
     @Scripts.Render("~/Scripts/app/app.rules.js")
     @Scripts.Render("~/Scripts/app/app.js")
+
+    <script>
+        Array.prototype.containsAny = function (needles) {
+            var self = this;
+            if (self == null) return false;
+            if (needles.constructor !== Array) {
+                var index = self.indexOf(needles);
+                return -1 !== index;
+            }
+
+            var intersection = self.filter(function (item) { return needles.indexOf(item) > -1 });
+            return (intersection.length > 0);
+        };
+    </script>
 }

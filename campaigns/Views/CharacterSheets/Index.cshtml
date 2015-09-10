@@ -1,11 +1,62 @@
-﻿@model IEnumerable<Campaigns.Models.DAL.CharacterSheet>
+﻿@model Campaigns.Models.CharacterSheet.IndexViewModel
 
 @{
     ViewBag.Title = "Index";
 }
 
-@Html.Partial("_BeginCreateModal", new ViewDataDictionary { { "modalId", "creationModal" } })
+<!-- 
+    Create New Character Modal
+    -->
 
+<div id='creationModal' class='modal fade in'>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Create new sheet</h4>
+            </div>
+
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modalName">Name</label>
+                        @Html.LabelFor(m => m.CreateCharacter.Name)
+                        @Html.EditorFor(m => m.CreateCharacter.Name)
+                        @Html.ValidationMessageFor(m => m.CreateCharacter.Name)
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.CreateCharacter.RaceId)
+                        @Html.DropDownListFor(m => m.CreateCharacter.RaceId, Model.Races, new { id = "races" })
+                        @Html.ValidationMessageFor(m => m.CreateCharacter.RaceId)
+                        <p class="help-block" id="races-help"></p>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.CreateCharacter.InitialClassId)
+                        @Html.DropDownListFor(m => m.CreateCharacter.InitialClassId, Model.Classes, new { id = "classes" })
+                        @Html.ValidationMessageFor(m => m.CreateCharacter.InitialClassId)
+                        <p class="help-block" id="classes-help"></p>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.CreateCharacter.Level)
+                        @Html.EditorFor(m => m.CreateCharacter.Level)
+                        @Html.ValidationMessageFor(m => m.CreateCharacter.Level)
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-primary" type="submit" value="Create" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!--
+    List View
+-->
 <h2>Index</h2>
 
 <p>
@@ -15,39 +66,33 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Description.Name)
+            @Html.DisplayNameFor(model => model.Characters.FirstOrDefault().Name)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Description.Text)
+            @Html.DisplayNameFor(model => model.Characters.FirstOrDefault().RaceName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Xp)
+            @Html.DisplayNameFor(model => model.Characters.FirstOrDefault().Level)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Level)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.DerivedStatistics.ProficiencyBonus)
+            @Html.DisplayNameFor(model => model.Characters.FirstOrDefault().ShortDescription)
         </th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model.Characters) {
     <tr>
         <td>
-            @Html.DisplayFor(modelItem => item.Description.Name)
+            @Html.DisplayFor(modelItem => item.Name)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Description.Text)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Xp)
+            @Html.DisplayFor(modelItem => item.RaceName)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Level)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.DerivedStatistics.ProficiencyBonus)
+            @Html.DisplayFor(modelItem => item.ShortDescription)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
@@ -61,64 +106,100 @@
 
 @section Scripts {
 <script>
-    var apiRules = {};
+(function () { 
+    function Api() {
+        this.rulesApiUri = '/api/rules';
+        this.catQueryPromises = {};        
+    }
 
-    var rulesApiUri = '/api/v1/rules';
+    Api.prototype.uriFor = function (e, id) {
+        var self = this;
 
-    function apiUriFor(e, id) {
-        var uri = rulesApiUri + '/' + e;
+        var uri = self.rulesApiUri + '/' + e;
         if (typeof id !== 'undefined') {
             uri = uri + '/' + id;
         }
         return uri;
     };
 
-    $.ajaxSetup({ cache: false });
+    Api.prototype.query = function (path) {
+        var self = this;
+        return $.getJSON(self.uriFor(path))
+    };
 
-    $(document).ready(function () {
-        $.getJSON(apiUriFor('dnd5e'))
-            .done(function (data) {
-                apiRules = data;
-                configureModal();
-            })
-            .fail(function (jqXhr, textStatus, err) {
-                alert('error: ' + err);
-            });
-    });
-
-    function configureModal() {
-        function findEntityDescription(entities, id) {
-            for (var i = 0, len = entities.length; i < len; i++) {
-                if (entities[i]['id'] == id) {
-                    return entities[i]['description'];
-                }
-            }
-            return 'no description found';
+    Api.prototype.getAttributesByCategory = function (category) {
+        var self = this;
+        var queryPromise = self.catQueryPromises[category];
+        if (typeof queryPromise === 'undefined') {
+            console.log('retrieving ' + category + ' from server...');
+            queryPromise = $.getJSON(self.uriFor(category));
+            self.catQueryPromises[category] = queryPromise;
         }
 
-        // configure 'races' combo
-        var races = apiRules['races'];
-        var racesCombo = $('#modalRace');
-        var racesHelp = $('#modalRaceHelp');
-        racesCombo.change(function () {
-            racesHelp.html(findEntityDescription(races, this.value));
-        });
-        $.each(races, function (idx, e) {
-            racesCombo.append($('<option>', { value : e['id'], text : e['name'], dataHelpText : e['description'] }));
-        });
-        racesHelp.html(findEntityDescription(races, $('#modalRace option:selected').val()));
-
-        // configure 'classes' combo
-        var classes = apiRules['classes'];
-        var classesCombo = $('#modalClass');
-        var classesHelp = $('#modalClassHelp');
-        classesCombo.change(function () {
-            classesHelp.html(findEntityDescription(classes, this.value));
-        });
-        $.each(classes, function (idx, e) {
-            classesCombo.append($('<option>', { value: e['id'], text: e['name'] }));
-        });
-        classesHelp.html(findEntityDescription(classes, $('#modalClass option:selected').val()));
+        return queryPromise;
     };
+
+    var api = new Api();
+
+    function bindNewCharacterHelpElement(name) {
+        var element = $('#' + name);
+        var helpElement = $('#' + name + '-help');
+
+        element.change(handleElementChanged);
+
+        $('#' + name + ' option:first').attr('selected', 'selected');
+        handleElementChanged();
+
+        //
+        // impl
+        //
+
+        function handleElementChanged() {
+            // request all attributes and cache them
+            var query = api.getAttributesByCategory(name)
+               .done(handleCategoryQueryDone)
+               .fail(handleQueryFail);
+
+            /*
+            // request description each time selection changes
+            var selectedId = element.val();
+            var path = name + '/' + selectedId;
+            api.query(path)
+               .done(handleQueryDone)
+               .fail(handleQueryFail);
+               */
+        }
+
+        function handleCategoryQueryDone(results) {
+            console.log('... got ' + name + ' response from server: ', results);
+            var attrib = $.grep(results, function (e) {
+                return e.id == element.val()
+            })[0];
+
+            helpElement.html(attrib.description);
+        }
+
+        function handleQueryDone(results) {
+            helpElement.html(results.description);
+        }
+
+        function handleQueryFail(jqXhr, textStatus, err) {
+            alert('error: ' + err);
+        }
+    }
+
+    $(function () {
+        @if (Model.IsModalOpen)
+        {
+            @:$('#creationModal').modal();
+        }
+
+        //
+        // fill in the 'create character' modal static data
+        //
+        bindNewCharacterHelpElement('races');
+        bindNewCharacterHelpElement('classes');
+    });
+})();
 </script>
 }

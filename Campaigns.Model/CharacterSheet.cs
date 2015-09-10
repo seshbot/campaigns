@@ -8,54 +8,61 @@ using System.Threading.Tasks;
 
 namespace Campaigns.Model
 {
-    public class CharacterUpdate : BaseEntity
+    public class AttributeAllocation : BaseEntity
     {
-        public IEnumerable<Model.Attribute> AddedAttributes { get; set; }
-        public IEnumerable<Model.Attribute> RemovedAttributes { get; set; }
-        public IEnumerable<Model.AttributeContribution> AddedAllocations { get; set; }
-        public IEnumerable<Model.AttributeContribution> RemovedAllocations { get; set; }
+        [ForeignKey("Attribute")]
+        public int AttributeId { get; set; }
+        public virtual Attribute Attribute { get; set; }
+        public int? Value { get; set; }
+
+        public override string ToString()
+        {
+            var attrib = Attribute?.ToString() ?? string.Format("Attrib {0}", AttributeId);
+            return string.Format("{0} = {1}", attrib, Value);
+        }
     }
 
-    public class CharacterSpecification : BaseEntity
+    public class CharacterUpdate : BaseEntity
     {
-        public CharacterSpecification()
-        {
-            Attributes = new List<Model.Attribute>();
-            Allocations = new List<Model.AttributeContribution>();
-        }
-        public IEnumerable<Model.Attribute> Attributes { get; set; }
-        public IEnumerable<Model.AttributeContribution> Allocations { get; set; } // TODO: find a better name
+        public virtual ICollection<Model.AttributeAllocation> RemovedAllocations { get; set; }
+        public virtual ICollection<Model.AttributeAllocation> AddedOrUpdatedAllocations { get; set; }
+    }
+
+    public class Character : BaseEntity
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        [ForeignKey("Sheet")]
+        public int SheetId { get; set; }
+        public virtual CharacterSheet Sheet { get; set; }
     }
 
     // TODO: create annotations to allow validation/attribute relationship constraints
     public class CharacterSheet : BaseEntity
     {
-        public CharacterSpecification Specification { get; set; }
-        public ICollection<AttributeValue> AttributeValues { get; set; }
+        public int CharacterId { get; set; }
+        public virtual ICollection<AttributeAllocation> AttributeAllocations { get; set; }
+        public virtual ICollection<AttributeValue> AttributeValues { get; set; }
 
         public static CharacterUpdate Diff(CharacterSheet first, CharacterSheet second)
         {
-            var firstAttribs = first.Specification.Attributes;
-            var secondAttribs = second.Specification.Attributes;
+            var firstAttribs = first.AttributeAllocations.Select(a => a.Attribute).Distinct();
+            var secondAttribs = second.AttributeAllocations.Select(a => a.Attribute).Distinct();
 
             var removedAttribs = firstAttribs.Except(secondAttribs);
             var addedAttribs = secondAttribs.Except(firstAttribs);
 
-            var firstContribs = first.Specification.Allocations;
-            var secondContribs = second.Specification.Allocations;
+            var removedAllocations = removedAttribs.Select(attrib => first.AttributeAllocations.First(a => a.Attribute == attrib));
+            var addedAllocations = addedAttribs.Select(attrib => second.AttributeAllocations.First(a => a.Attribute == attrib));
 
-            // counts as removed if attribute is no longer targeted at all
-            var contribsRemoved = firstContribs.Where(c1 => !secondContribs.Any(c2 => c1.Target == c2.Target));
+            // updated if the allocation is unique to second but the attribute is present in the first
+            var updatedAllocations = second.AttributeAllocations.Except(first.AttributeAllocations)
+                .Where(a => firstAttribs.Contains(a.Attribute));
 
-            // counts as added if it is new or modified
-            var contribsAdded = secondContribs.Where(c2 => !firstContribs.Any(c1 => c1 == c2));
-   
             return new CharacterUpdate
             {
-                AddedAttributes = addedAttribs,
-                RemovedAttributes = removedAttribs,
-                AddedAllocations = contribsAdded,
-                RemovedAllocations = contribsRemoved,
+                AddedOrUpdatedAllocations = addedAllocations.Concat(updatedAllocations).ToList(),
+                RemovedAllocations = removedAllocations.ToList(),
             };
         }
     }
