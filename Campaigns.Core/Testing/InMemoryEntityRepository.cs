@@ -41,8 +41,13 @@ namespace Campaigns.Core.Testing
         {
             get
             {
-                return _entities.Values.AsQueryable();
+                return AsQueryable;
             }
+        }
+
+        public IQueryable<T> AsQueryableIncluding(params string[] paths)
+        {
+            return AsQueryable;
         }
 
         public void Add(T entity)
@@ -69,6 +74,11 @@ namespace Campaigns.Core.Testing
             T result;
             _entities.TryGetValue(id, out result);
             return result;
+        }
+
+        public T GetByIdIncluding(int id, params string[] paths)
+        {
+            return GetById(id);
         }
 
         public void Remove(T entity)

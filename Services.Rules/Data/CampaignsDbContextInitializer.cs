@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Services.Rules.Data
 {
-    public class CampaignsDbContextInitializer : DropCreateDatabaseAlways<CampaignsDbContext>
+    public class CampaignsDbContextInitializer : DropCreateDatabaseIfModelChanges<CampaignsDbContext>
     {
         protected override void Seed(CampaignsDbContext context)
         {

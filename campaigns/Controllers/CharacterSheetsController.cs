@@ -37,6 +37,71 @@ namespace Campaigns.Controllers
             };
         }
 
+#if false
+        [NonAction]
+        private CharacterViewModel PrepareDetailedCharacterViewModel(Character character, IDictionary<int, Model.Attribute> attributesById, IDictionary<string, IList<int>> attributeIdsByCategory)
+        {
+            var raceIds = attributeIdsByCategory["races"];
+            var raceAttributeId = character.Sheet.AttributeAllocations
+                ?.FirstOrDefault(a => raceIds.Contains(a.AttributeId))
+                ?.AttributeId;
+            var raceName = raceAttributeId.HasValue ? attributesById[raceAttributeId.Value].LongName : "";
+
+            var classIds = attributeIdsByCategory["classes"];
+            var classAttributeId = character.Sheet.AttributeAllocations
+                ?.FirstOrDefault(a => classIds.Contains(a.AttributeId))
+                ?.AttributeId;
+            var className = classAttributeId.HasValue ? attributesById[classAttributeId.Value].LongName : "";
+
+            var attribVals =
+               (from attribVal in character.Sheet.AttributeValues
+                select new
+                {
+                    AttributeId = attribVal.AttributeId,
+                    Value = attribVal.Value,
+                    AttributeIdsContributingTo = attribVal.Contributions.Select(c => c.SourceId)
+                }).ToList();
+
+            IEnumerable<AttributeValueViewModel> attribValViewModels;
+            using (new Tracer("Creating Attrib Value View Models"))
+            {
+                attribValViewModels =
+                   (from attribVal in attribVals
+                    let attrib = attributesById[attribVal.AttributeId]
+                    let contribsTo = attribVal.AttributeIdsContributingTo
+                        .Where(id => id.HasValue)
+                        .Select(id =>
+                            new AttributeContributionViewModel
+                            {
+                                SourceId = id.Value,
+                                SourceName = attributesById[id.Value].Name
+                            })
+                    select new AttributeValueViewModel
+                    {
+                        AttributeId = attribVal.AttributeId,
+                        AttributeCategory = attrib.Category,
+                        AttributeName = attrib.Name,
+                        AttributeLongName = attrib.LongName,
+                        AttributeSortOrder = attrib.SortOrder,
+                        Value = attribVal.Value,
+                        Contributions = contribsTo,
+                    }).ToList();
+            }
+
+            var viewModel = new CharacterViewModel
+            {
+                Id = character.Id,
+                Name = character.Name,
+                Description = character.Description,
+                ClassName = className,
+                RaceName = raceName,
+                AttributeValues = attribValViewModels
+            };
+
+            return viewModel;
+        }
+#endif
+
         [NonAction]
         private CharacterViewModel PrepareCharacterViewModel(Character character)
         {
@@ -63,12 +128,16 @@ namespace Campaigns.Controllers
         private Models.CharacterSheet.IndexViewModel PrepareIndexViewModel()
         {
             Mapper.CreateMap<Model.Attribute, SelectListItem>()
-                .ForMember(dest => dest.Value, o => o.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Text, o => o.MapFrom(src => src.LongName));
+            .ForMember(dest => dest.Value, o => o.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Text, o => o.MapFrom(src => src.LongName));
+
+            IEnumerable<CharacterViewModel> characterViewModels;
+            var characters = _rules.GetCharacters().ToList();
+            characterViewModels = characters.Select(PrepareCharacterViewModel).ToList();
 
             return new Models.CharacterSheet.IndexViewModel
             {
-                Characters = _rules.GetCharacters().Select(PrepareCharacterViewModel).ToList(),
+                Characters = characterViewModels,
                 CreateCharacter = PrepareCreateCharacterViewModel(),
                 Races = _rules.GetAttributesByCategory("races").Select(Mapper.Map<SelectListItem>).ToList(),
                 Classes = _rules.GetAttributesByCategory("classes").Select(Mapper.Map<SelectListItem>).ToList(),
@@ -141,7 +210,7 @@ namespace Campaigns.Controllers
             {
                 return HttpNotFound();
             }
-
+            
             var viewModel = new ViewEditCharacterViewModel
             {
                 IsEditing = false,
@@ -245,6 +314,21 @@ namespace Campaigns.Controllers
             {
             }
             base.Dispose(disposing);
+        }
+    }
+    
+    class Tracer : IDisposable
+    {
+        string _name;
+        public Tracer(string name)
+        {
+            _name = name;
+            System.Diagnostics.Trace.TraceInformation("Begin " + _name);
+        }
+
+        public void Dispose()
+        {
+            System.Diagnostics.Trace.TraceInformation("End " + _name);
         }
     }
 }

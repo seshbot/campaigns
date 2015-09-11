@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,16 @@ namespace Campaigns.Core.Data
         {
             _context = context;
             _db = db;
+        }
+
+        public IQueryable<T> AsQueryableIncluding(params string[] paths)
+        {
+            DbQuery<T> db = _db;
+            foreach (var path in paths)
+            {
+                db = db.Include(path);
+            }
+            return db;
         }
 
         public IQueryable<T> AsQueryable { get { return _db; } }
@@ -43,6 +54,12 @@ namespace Campaigns.Core.Data
         public T GetById(int id)
         {
             return _db.Find(id);
+        }
+
+        public T GetByIdIncluding(int id, params string[] paths)
+        {
+            return AsQueryableIncluding(paths)
+                .FirstOrDefault(e => e.Id == id);
         }
 
         public void Remove(T entity)

@@ -81,12 +81,12 @@ namespace Services.Rules
 
         public IQueryable<Character> GetCharacters()
         {
-            return _charactersDb.AsQueryableNoTracking;
+            return _charactersDb.AsQueryableIncluding("Sheet.AttributeValues.Contributions");
         }
 
         public Character GetCharacter(int id)
         {
-            return _charactersDb.GetById(id);
+            return _charactersDb.GetByIdIncluding(id, "Sheet.AttributeValues.Contributions");
         }
 
         private static IEnumerable<T> EmptyOnNull<T>(IEnumerable<T> xs)
@@ -182,6 +182,11 @@ namespace Services.Rules
             _charactersDb.Update(character);
 
             return character;
+        }
+
+        public IQueryable<Campaigns.Model.Attribute> GetAllAttributes()
+        {
+            return _attributesDb.AsQueryable;
         }
 
         public IQueryable<Campaigns.Model.Attribute> GetAttributesByCategory(string category)

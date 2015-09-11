@@ -118,7 +118,7 @@
                             <table class="table table-striped table-hover">
                                 @foreach (var skill in Model.Character.GetCategoryAttributeValues("skills"))
                                 {
-                                    var sourceIds = "[\"" + string.Join("\",\"", skill.Contributions.Select(c => c.SourceName)) + "\"]";
+                                    var sourceIds = "[" + string.Join(",", skill.Contributions.Select(c => '"' + c.SourceName + '"')) + "]";
                                     var sourcesNames = string.Join(", ", skill.Contributions.Select(c => c.SourceName));
                                     <tr ng-class='{"selected": selectedAbilityIds.containsAny(@Html.Raw(sourceIds))}' ng-mouseenter='selectedAbilityIds = @Html.Raw(sourceIds)' ng-mouseleave="selectedAbilityIds = []">
                                         <td width="20%" class="text-center">@skill.Value</td>

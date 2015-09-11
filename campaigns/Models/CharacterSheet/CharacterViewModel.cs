@@ -9,7 +9,7 @@ namespace Campaigns.Models.CharacterSheet
 {
     public class CharacterViewModel
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         [Display(Name="Race")]
         public string RaceName { get; set; }
@@ -60,6 +60,11 @@ namespace Campaigns.Models.CharacterSheet
         public string ValueWithSign { get { return Value.ToString("+#;-#;0"); } }
 
         public IEnumerable<AttributeContributionViewModel> Contributions { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1} ({2}) = {3}", AttributeId, AttributeName, AttributeCategory, Value);
+        }
     }
 
     public class AttributeContributionViewModel
@@ -68,5 +73,12 @@ namespace Campaigns.Models.CharacterSheet
         public string SourceName { get; set; }
         public int TargetId { get; set; }
         public string TargetName { get; set; }
+
+        public override string ToString()
+        {
+            var src = SourceName ?? SourceId.ToString();
+            var dst = TargetName ?? TargetId.ToString();
+            return string.Format("{0}->{1}", src, dst);
+        }
     }
 }

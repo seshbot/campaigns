@@ -13,6 +13,7 @@ namespace Services.Rules
         IQueryable<Character> GetCharacters();
         Character UpdateCharacter(Character character, CharacterUpdate update);
 
+        IQueryable<Campaigns.Model.Attribute> GetAllAttributes();
         IQueryable<Campaigns.Model.Attribute> GetAttributesByCategory(string category);
         Campaigns.Model.Attribute GetAttributeById(int id);
     }

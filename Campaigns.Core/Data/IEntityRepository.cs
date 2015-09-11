@@ -11,6 +11,10 @@ namespace Campaigns.Core.Data
     {
         T GetById(int id);
 
+        T GetByIdIncluding(int id, params string[] paths);
+
+        IQueryable<T> AsQueryableIncluding(params string[] paths);
+
         IQueryable<T> AsQueryable { get; }
 
         IQueryable<T> AsQueryableNoTracking { get; }
