@@ -8,35 +8,6 @@ using System.Threading.Tasks;
 
 namespace Campaigns.Model
 {
-    public class AttributeAllocation : BaseEntity
-    {
-        [ForeignKey("Attribute")]
-        public int AttributeId { get; set; }
-        public virtual Attribute Attribute { get; set; }
-        public int? Value { get; set; }
-
-        public override string ToString()
-        {
-            var attrib = Attribute?.ToString() ?? string.Format("Attrib {0}", AttributeId);
-            return string.Format("{0} = {1}", attrib, Value);
-        }
-    }
-
-    public class CharacterUpdate : BaseEntity
-    {
-        public virtual ICollection<Model.AttributeAllocation> RemovedAllocations { get; set; }
-        public virtual ICollection<Model.AttributeAllocation> AddedOrUpdatedAllocations { get; set; }
-    }
-
-    public class Character : BaseEntity
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        [ForeignKey("Sheet")]
-        public int SheetId { get; set; }
-        public virtual CharacterSheet Sheet { get; set; }
-    }
-
     // TODO: create annotations to allow validation/attribute relationship constraints
     public class CharacterSheet : BaseEntity
     {

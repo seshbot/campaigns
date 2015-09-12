@@ -11,13 +11,19 @@ namespace Campaigns.Core.Data
     {
         T GetById(int id);
 
+        T GetByIdNoTracking(int id);
+
         T GetByIdIncluding(int id, params string[] paths);
 
-        IQueryable<T> AsQueryableIncluding(params string[] paths);
+        T GetByIdNoTrackingIncluding(int id, params string[] paths);
 
         IQueryable<T> AsQueryable { get; }
 
         IQueryable<T> AsQueryableNoTracking { get; }
+
+        IQueryable<T> AsQueryableIncluding(params string[] paths);
+
+        IQueryable<T> AsQueryableNoTrackingIncluding(params string[] paths);
     }
 
     public interface IEntityRepository<T> : IEntityStore<T> where T : BaseEntity

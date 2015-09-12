@@ -79,6 +79,7 @@ namespace Services.Rules
             return character;
         }
 
+#if true
         public IQueryable<Character> GetCharacters()
         {
             return _charactersDb.AsQueryableIncluding("Sheet.AttributeValues.Contributions");
@@ -88,7 +89,50 @@ namespace Services.Rules
         {
             return _charactersDb.GetByIdIncluding(id, "Sheet.AttributeValues.Contributions");
         }
+#else
+        private IDictionary<int, List<AttributeContribution>> attributeContributionsByTargetId()
+        {
+            return _contributionsDb
+                .AsQueryableNoTrackingIncluding("Source")
+                .Where(c => c.TargetId.HasValue)
+                .GroupBy(c => c.TargetId.Value)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.ToList());
+        }
 
+        public IEnumerable<Character> GetCharacters()
+        {
+            var noContributions = new List<AttributeContribution>();
+            var contributionsByTargetId = attributeContributionsByTargetId();
+            foreach (var character in _charactersDb.AsQueryableNoTrackingIncluding("Sheet.AttributeValues"))
+            {
+                foreach (var attrib in character.Sheet.AttributeValues)
+                {
+                    List<AttributeContribution> contributions;
+                    if (contributionsByTargetId.TryGetValue(attrib.AttributeId, out contributions))
+                    {
+                        attrib.Contributions = contributions;
+                    }
+                    else
+                    {
+                        attrib.Contributions = noContributions;
+                    }
+                }
+
+                yield return character;
+            }
+        }
+
+        public Character GetCharacter(int id)
+        {
+            var noContributions = new List<AttributeContribution>();
+            var character = _charactersDb.GetByIdNoTrackingIncluding(id, "Sheet.AttributeValues");
+            foreach (var attrib in character.Sheet.AttributeValues)
+            {
+                attrib.Contributions = noContributions;
+            }
+            return character;
+        }
+#endif
         private static IEnumerable<T> EmptyOnNull<T>(IEnumerable<T> xs)
         {
             return xs ?? new List<T>();

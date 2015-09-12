@@ -50,6 +50,11 @@ namespace Campaigns.Core.Testing
             return AsQueryable;
         }
 
+        public IQueryable<T> AsQueryableNoTrackingIncluding(params string[] paths)
+        {
+            return AsQueryable;
+        }
+
         public void Add(T entity)
         {
             if (!entity.IsTemporary())
@@ -76,7 +81,17 @@ namespace Campaigns.Core.Testing
             return result;
         }
 
+        public T GetByIdNoTracking(int id)
+        {
+            return GetById(id);
+        }
+
         public T GetByIdIncluding(int id, params string[] paths)
+        {
+            return GetById(id);
+        }
+
+        public T GetByIdNoTrackingIncluding(int id, params string[] paths)
         {
             return GetById(id);
         }

@@ -58,10 +58,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attribute.cs" />
-    <Compile Include="AttributeCategory.cs" />
+    <Compile Include="AttributeAllocation.cs" />
     <Compile Include="AttributeContribution.cs" />
     <Compile Include="AttributeValue.cs" />
+    <Compile Include="Character.cs" />
     <Compile Include="CharacterSheet.cs" />
+    <Compile Include="CharacterUpdate.cs" />
     <Compile Include="Data\CampaignsDbContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
