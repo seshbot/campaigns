@@ -12,12 +12,19 @@
 
         return {
             getCategoryAttributes: getCategoryAttributes,
+            getContributions: getContributions,
         };
 
         // public interface
 
         function getCategoryAttributes(category) {
             var request = $http.get(apiUrl + '/' + category);
+
+            return request.then(handleSuccess, handleError);
+        };
+
+        function getContributions() {
+            var request = $http.get(apiUrl + '/contributions');
 
             return request.then(handleSuccess, handleError);
         };

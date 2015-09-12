@@ -112,8 +112,7 @@ namespace Campaigns.Controllers
             var className = character.Sheet.AttributeAllocations
                 ?.FirstOrDefault(a => "classes" == a.Attribute.Category)
                 ?.Attribute.LongName;
-
-            Mapper.CreateMap<AttributeContribution, AttributeContributionViewModel>();
+            
             Mapper.CreateMap<AttributeValue, AttributeValueViewModel>();
             Mapper.CreateMap<Character, CharacterViewModel>()
                     .ForMember(dest => dest.AttributeValues, o => o.MapFrom(src => src.Sheet.AttributeValues));
@@ -130,10 +129,9 @@ namespace Campaigns.Controllers
             Mapper.CreateMap<Model.Attribute, SelectListItem>()
             .ForMember(dest => dest.Value, o => o.MapFrom(src => src.Id))
             .ForMember(dest => dest.Text, o => o.MapFrom(src => src.LongName));
-
-            IEnumerable<CharacterViewModel> characterViewModels;
-            var characters = _rules.GetCharacters().ToList();
-            characterViewModels = characters.Select(PrepareCharacterViewModel).ToList();
+            
+            IEnumerable<CharacterViewModel> characterViewModels =
+                _rules.GetCharacters().Select(PrepareCharacterViewModel).ToList();
 
             return new Models.CharacterSheet.IndexViewModel
             {

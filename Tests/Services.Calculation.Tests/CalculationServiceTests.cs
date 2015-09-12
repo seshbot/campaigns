@@ -93,7 +93,6 @@ namespace Services.Calculation.Tests
         {
             var values = result.AttributeValues.Where(val => val.Attribute == attrib);
             Assert.IsTrue(values.Count() == 1);
-            Assert.IsTrue(values.First().Contributions.Count(c => c.Source == contributingAttrib) == 1);
         }
     }
 }

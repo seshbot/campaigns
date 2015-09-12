@@ -72,22 +72,7 @@ namespace Services.Rules
                 }
             }
         }
-
-        public void AddContribution(AttributeContribution contribution)
-        {
-            if (null != contribution.Source && !_memDb.Attributes.Any(a => a.Id == contribution.Source.Id))
-            {
-                _memDb.AddAttribute(contribution.Source);
-            }
-
-            if (!_memDb.Attributes.Any(a => a.Id == contribution.Target.Id))
-            {
-                _memDb.AddAttribute(contribution.Target);
-            }
-
-            _memDb.AddContribution(contribution);
-        }
-
+        
         public IEnumerable<Campaigns.Model.Attribute> ContributingAttributes { get { return _memDb.Attributes; } }
 
         public IEnumerable<AttributeContribution> AllContributionsFrom(int sourceId)

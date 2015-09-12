@@ -28,6 +28,14 @@ namespace Campaigns.Controllers.API.Rules
             return viewModel;
         }
 
+        public static IEnumerable<AttributeContributionViewModel> CreateViewModel(this IEntityStore<Campaigns.Model.AttributeContribution> db)
+        {
+            Mapper.CreateMap<Campaigns.Model.AttributeContribution, AttributeContributionViewModel>();
+
+            var viewModel = Mapper.Map<IEnumerable<AttributeContributionViewModel>>(db.AsQueryable);
+            return viewModel;
+        }
+
         //public static Models.API.CharacterSheetViewModel CreateViewModel(Campaigns.Model.CharacterSheet characterSheet)
         //{
         //    if (null == characterSheet)
@@ -72,6 +80,14 @@ namespace Campaigns.Controllers.API.Rules
             }
 
             return Ok(_contributionsDb.CreateViewModel(attrib));
+        }
+
+        [ResponseType(typeof(IEnumerable<AttributeContributionViewModel>))]
+        [Route("contributions")]
+        public IHttpActionResult GetContributions()
+        {
+            var viewModel = _contributionsDb.CreateViewModel();
+            return Ok(viewModel);
         }
 
         [ResponseType(typeof(IEnumerable<AttributeCategoryViewModel>))]

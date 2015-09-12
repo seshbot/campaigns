@@ -64,10 +64,11 @@ namespace Services.Calculation
                    select contrib;
         }
 
-        private IEnumerable<AttributeContribution> GetDirectContributionsTo(Campaigns.Model.Attribute target)
+        private IEnumerable<AttributeContribution> GetRelevantContributionsTo(Campaigns.Model.Attribute target)
         {
+            // direct contributions and contributions that are relevant to this calculation
             return _context.AllContributionsTo(target)
-                .Where(c => null == c.Source);
+                .Where(contrib => null == contrib.Source || _context.IsAttributeContributing(contrib.Source));
         }
 
         private void AddValueAsPending(AttributeValue value)
@@ -91,14 +92,10 @@ namespace Services.Calculation
             AttributeValue result;
             if (!_pendingValues.TryGetValue(target.Id, out result))
             {
-                var directDependencies = GetDirectContributionsTo(target).ToList();
-                var directDependencyContributions = directDependencies.Select(c => c.Formula(0));
-
                 result = new AttributeValue
                 {
                     Attribute = target,
-                    Value = directDependencyContributions.Sum(),
-                    Contributions = new List<AttributeContribution>()
+                    Value = 0,
                 };
                 AddValueAsPending(result);
 
@@ -109,7 +106,6 @@ namespace Services.Calculation
         private void AddContribution(AttributeContribution contribution)
         {
             var value = GetOrAddPendingValue(contribution.Target);
-            value.Contributions.Add(contribution);
         }
 
         private IList<Campaigns.Model.Attribute> GetPreparedAttributes()
@@ -126,17 +122,12 @@ namespace Services.Calculation
         private int CompletePendingCalculation(Campaigns.Model.Attribute target)
         {
             var value = GetOrAddPendingValue(target);
-            if (null != value.Contributions)
+            var contribsToTarget = GetRelevantContributionsTo(target).ToList();
+            foreach (var contribution in contribsToTarget)
             {
-                foreach (var contribution in value.Contributions)
-                {
-                    var source = contribution.Source;
-                    if (target.Id != contribution.Target.Id)
-                        throw new Exception("calculation engine assertion: unexpected calculation target");
-
-                    var sourceValue = null == source ? 0 : _completedValues[source.Id].Value;
-                    value.Value += contribution.Formula(sourceValue);
-                }
+                var source = contribution.Source;
+                var sourceValue = null == source ? 0 : _completedValues[source.Id].Value;
+                value.Value += contribution.Formula(sourceValue);
             }
             return SetCompleted(value);
         }

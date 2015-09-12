@@ -82,12 +82,12 @@ namespace Services.Rules
 #if true
         public IQueryable<Character> GetCharacters()
         {
-            return _charactersDb.AsQueryableIncluding("Sheet.AttributeValues.Contributions");
+            return _charactersDb.AsQueryableIncluding("Sheet.AttributeValues");
         }
 
         public Character GetCharacter(int id)
         {
-            return _charactersDb.GetByIdIncluding(id, "Sheet.AttributeValues.Contributions");
+            return _charactersDb.GetByIdIncluding(id, "Sheet.AttributeValues");
         }
 #else
         private IDictionary<int, List<AttributeContribution>> attributeContributionsByTargetId()

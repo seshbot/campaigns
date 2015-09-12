@@ -59,26 +59,9 @@ namespace Campaigns.Models.CharacterSheet
         public int Value { get; set; }
         public string ValueWithSign { get { return Value.ToString("+#;-#;0"); } }
 
-        public IEnumerable<AttributeContributionViewModel> Contributions { get; set; }
-
         public override string ToString()
         {
             return string.Format("{0}: {1} ({2}) = {3}", AttributeId, AttributeName, AttributeCategory, Value);
-        }
-    }
-
-    public class AttributeContributionViewModel
-    {
-        public int SourceId { get; set; }
-        public string SourceName { get; set; }
-        public int TargetId { get; set; }
-        public string TargetName { get; set; }
-
-        public override string ToString()
-        {
-            var src = SourceName ?? SourceId.ToString();
-            var dst = TargetName ?? TargetId.ToString();
-            return string.Format("{0}->{1}", src, dst);
         }
     }
 }
