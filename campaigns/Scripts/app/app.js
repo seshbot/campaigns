@@ -1,10 +1,10 @@
 ﻿(function () {
     'use strict';
 
-    angular.module('app', ['app.rules']);
+    angular.module('app', ['app.rules', 'angular-loading-bar']);
 
     angular.module('app').controller('CharacterSheetDetailsCtrl', Controller);
-        
+
     Controller.$inject = ['$scope', '$http', 'rules'];
     function Controller($scope, $http, rules) {
         $scope.loaded = false;
@@ -32,6 +32,14 @@
             // TODO: use a service https://github.com/johnpapa/angular-styleguide#style-y035
             console.log('loading application data');
 
+            $scope.start = function () {
+                console.log('xxx');
+                cfpLoadingBar.start();
+            }
+            $scope.stop = function () {
+                console.log('xxx');
+                cfpLoadingBar.complete();
+            }
             $scope.loaded = false;
             $scope.errorMessage = '';
             $scope.errorMessageDetail = '';
