@@ -156,7 +156,7 @@ namespace Campaigns.Controllers
             var characterAllocations = new[]
             {
                 new AttributeAllocation { Attribute = _rules.GetAttributeById(viewModel.RaceId) },
-                new AttributeAllocation { Attribute = _rules.GetAttributeById(viewModel.InitialClassId) },
+                new AttributeAllocation { Attribute = _rules.GetAttributeById(viewModel.InitialClassId), Value = viewModel.Level },
             };
 
             var allocations = standardAllocations.Concat(characterAllocations);

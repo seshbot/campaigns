@@ -24,16 +24,8 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        //public int HitDie { get; set; }
+        public int HitDie { get; set; }
         //public List<Ability> SavingThrowProficiencies { get; set; }
         //public List<string> ArmorAndWeaponProficiencies { get; set; }
-    }
-
-    public class Race
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        //public List<AbilityScore> AbilityIncrease { get; set; }
     }
 }
