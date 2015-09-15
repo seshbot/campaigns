@@ -7,12 +7,28 @@
     {
         pageTitle = MvcHtmlString.Create("Unnamed");
     }
+
+    var acAttrib = Model.Character.GetAttributeValue("ac", "intrinsics");
+    var hitDieAttrib = Model.Character.GetCategoryAttributeValues("hitdie").Where(a => a.Value > 0);
+
+    var classAttribs = Model.Character.GetCategoryAttributeValues("classes").Where(a => a.Value > 0);
+    var classLevelStrings = classAttribs.Select(a => string.Format("{0} {1}", a.Value, a.AttributeLongName));
+    var classLevelString = string.Join(" ", classLevelStrings);
+
+    if (classAttribs.Count() > 1)
+    {
+        var totalLevel = Model.Character.GetAttributeValue("Level", "intrinsics").Value;
+        classLevelString = string.Format("Level {0} ({1})", totalLevel, classLevelString);
+    }
+    else
+    {
+        classLevelString = string.Format("Level {0}", classLevelString);
+    }
 }
 
 <p />
 <div ng-app="app">
     <div ng-controller="CharacterSheetDetailsCtrl">
-        <div ng-hide="loaded" ng-cloak>Loading...</div>
         <div class="panel panel-danger" ng-show="errorMessage" ng-cloak>
             <div class="panel-heading" role="tab">
                 <h4 class="panel-title" ng-mou>
@@ -34,7 +50,7 @@
             <div class="col-md-9">
                 <div class="row">
                     <div class="col-md-4">
-                        <h4>Level @Html.DisplayFor(model => model.Character.GetAttributeValue("Level", "intrinsics").Value) @Html.DisplayFor(model => model.Character.ClassName)<br /><small>Class</small></h4>
+                        <h4>@classLevelString<br /><small>Class</small></h4>
                     </div>
                     <div class="col-md-4">
                         <h4>Noble<br /><small>Background</small></h4>
@@ -46,12 +62,14 @@
                 <div class="row" style="padding-top:16px;">
                     <div class="col-md-4">
                         <h4>@Html.DisplayFor(model => model.Character.RaceName)<br /><small>Race</small></h4>
+                        @*<h4>{{character.getAttributeByCategory('races').name}}<br /><small>Race</small></h4>*@
                     </div>
                     <div class="col-md-4">
                         <h4>Neutral Good<br /><small>Alignment</small></h4>
                     </div>
                     <div class="col-md-4">
                         <h4>@Model.Character.GetAttributeValue("XP", "intrinsics").Value XP<br /><small>Experience</small></h4>
+                        @*<h4>{{character.getAttributeValueByName('intrinsics', 'XP')}} XP<br /><small>Experience</small></h4>*@
                     </div>
                 </div>
             </div>
@@ -90,6 +108,21 @@
                                 </fieldset>
                             </div>
                         }
+                        @*<div ng-repeat='attrib in attributesByCategory["ability-modifiers"]' style="padding-bottom: 1.2em"
+                             ng-mouseenter="hilightAttribute(attrib.id)"
+                             ng-mouseleave="hilightAttribute(-1)">
+                            <fieldset ng-class="{'text-success': shouldHighlightAttribute(attrib.id)}" style="border: 1px #ddd solid; border-radius: 3px;">
+                                <legend align="center" style="width: inherit; border: 0 #ddd solid; margin: 0 1em; padding: 0 2px; font-size: 1em">
+                                    {{attrib.name}}
+                                </legend>
+                                <div class="text-center" style="margin-bottom: 20px">
+                                    <h3>{{character.getAttributeValueById(attrib.id)}}</h3>
+                                </div>
+                                <div ng-class="{'selected': shouldHighlightAttribute(attrib.id)}" class="text-center muted" style="border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; border-top: 1px solid #ddd; padding: 6px">
+                                    <span>{{character.getAttributeValueByName('abilities', attrib.name)}}</span>
+                                </div>
+                            </fieldset>
+                        </div>*@
                     </div>
                     <div class="col-md-8">
                         <div class="panel panel-default">
@@ -136,19 +169,15 @@
                     </div>
                 </div>
             </div>
-            @{
-                var ac = Model.Character.GetAttributeValue("ac", "intrinsics");
-                var hitDie = Model.Character.GetCategoryAttributeValues("hitdie").Where(d => d.Value > 0);
-            }
             <div class="col-md-4">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="panel panel-default"
-                             ng-class="{'text-success': shouldHighlightAttribute(@ac.AttributeId)}"
-                             ng-mouseenter="hilightAttribute(@ac.AttributeId)"
+                             ng-class="{'text-success': shouldHighlightAttribute(@acAttrib.AttributeId)}"
+                             ng-mouseenter="hilightAttribute(@acAttrib.AttributeId)"
                              ng-mouseleave="hilightAttribute(-1)">
-                            <div class="panel-body text-center">@ac.Value</div>
-                            <div ng-class="{'selected': shouldHighlightAttribute(@ac.AttributeId)}" class="panel-footer text-center"><small><strong>AC</strong></small></div>
+                            <div class="panel-body text-center">@acAttrib.Value</div>
+                            <div ng-class="{'selected': shouldHighlightAttribute(@acAttrib.AttributeId)}" class="panel-footer text-center"><small><strong>AC</strong></small></div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -172,7 +201,7 @@
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-body text-center">
-                                @foreach (var die in hitDie)
+                                @foreach (var die in hitDieAttrib)
                                 {
                                     <span>@die.Value</span><span>@die.AttributeName</span>
                                 }
@@ -284,13 +313,10 @@
     <li>
         <div class="btn-group navbar-btn">
             <button class="btn btn-default" onclick="location.href='@Url.Action("Edit", new { id = Model.Character.Id })'">Edit</button>
-            @if (Model.IsEditing)
-            {
-                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
-                <ul class="dropdown-menu">
-                    <li><a href="#">Level Up</a></li>
-                </ul>
-            }
+            <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
+            <ul class="dropdown-menu">
+                <li><a href="#">Level Up</a></li>
+            </ul>
         </div>
     </li>
 }
@@ -298,4 +324,8 @@
 @section Scripts {
     @Scripts.Render("~/Scripts/app/app.rules.js")
     @Scripts.Render("~/Scripts/app/app.js")
+
+    <script>
+        angular.module("app").value("characterId", '@Model.Character.Id');
+    </script>
 }

@@ -142,26 +142,47 @@ namespace Campaigns.Controllers.API.Rules
     }
 
     [RoutePrefix("api/characters")]
-    public class CharactersV2Controller : ApiController
+    public class CharactersController : ApiController
     {
         private IRulesService _rules;
 
-        public CharactersV2Controller(IRulesService rules)
+        public CharactersController(IRulesService rules)
         {
             _rules = rules;
         }
-        
-        //[ResponseType(typeof(Models.API.CharacterSheetViewModel))]
-        //[Route("")]
-        //public IHttpActionResult GetAll()
-        //{
-        //    var attrib = _rulesContext.GetAttribute(name, category);
-        //    if (null == attrib)
-        //    {
-        //        return NotFound();
-        //    }
 
-        //    return Ok(_rulesContext.CreateAttributeViewModel(attrib));
-        //}
+        private AttributeValueViewModel PrepareAttributeValueViewModel(Campaigns.Model.AttributeValue attributeValue)
+        {
+            return new AttributeValueViewModel
+            {
+                AttributeId = attributeValue.AttributeId,
+                Value = attributeValue.Value,
+            };
+        }
+
+        private CharacterViewModel PrepareCharacterViewModel(Campaigns.Model.Character character)
+        {
+            return new CharacterViewModel
+            {
+                Id = character.Id,
+                Name = character.Name,
+                Description = character.Description,
+                LatestSheetId = character.SheetId,
+                AttributeValues = character.Sheet.AttributeValues.Select(PrepareAttributeValueViewModel)
+            };
+        }
+
+        [ResponseType(typeof(CharacterViewModel))]
+        [Route("{id}")]
+        public IHttpActionResult GetCharacter(int id)
+        {
+            var character = _rules.GetCharacter(id);
+            if (null == character)
+            {
+                return NotFound();
+            }
+
+            return Ok(PrepareCharacterViewModel(character));
+        }
     }
 }

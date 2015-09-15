@@ -4,29 +4,35 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Campaigns.Models.API
 {
-    public class AbilityAllocationViewModel
+    public class AttributeValueViewModel
     {
-        public int AbilityId { get; set; }
-        public int Points { get; set; }
+        public int AttributeId { get; set; }
+        public int Value { get; set; }
     }
 
-    public class SkillAllocationViewModel
+    public class CharacterViewModel
     {
-        public int SkillId { get; set; }
-        public int Points { get; set; }
-    }
-
-    public class CharacterSheetViewModel
-    {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         [DataType(DataType.Html), AllowSafeHtml]
         public string Description { get; set; }
-        public int? Level { get; set; }
-        public int? Xp { get; set; }
-        public int? RaceId { get; set; }
-        public int? ClassId { get; set; }
-        public List<AbilityAllocationViewModel> AbilityAllocations { get; set; }
-        public List<SkillAllocationViewModel> SkillAllocations { get; set; }
+
+        public int LatestSheetId { get; set; }
+
+        public IEnumerable<AttributeValueViewModel> AttributeValues { get; set; }
+    }
+    
+    public class AttributeAllocationViewModel
+    {
+        public int AttributeId { get; set; }
+        public int Value { get; set; }
+    }
+
+    public class CharacterAttributeAllocationsViewModel
+    {
+        public int CharacterId { get; set; }
+        public int CharacterSheetId { get; set; }
+
+        public IEnumerable<AttributeAllocationViewModel> AttributeAllocations { get; set; }
     }
 }
