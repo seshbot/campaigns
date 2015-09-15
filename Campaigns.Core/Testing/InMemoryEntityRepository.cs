@@ -95,6 +95,16 @@ namespace Campaigns.Core.Testing
         {
             return GetById(id);
         }
+        
+        public Task GetByIdAsync(int id)
+        {
+            return Task.FromResult(GetById(id));            
+        }
+
+        public Task GetByIdIncludingAsync(int id, params string[] paths)
+        {
+            return Task.FromResult(GetByIdIncludingAsync(id, paths));
+        }
 
         public void Remove(T entity)
         {

@@ -1,6 +1,7 @@
 ﻿using Campaigns.Model;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services.Rules
 {
@@ -10,6 +11,7 @@ namespace Services.Rules
         Character CreateCharacter(string name, string description);
         Character CreateCharacter(string name, string description, IEnumerable<AttributeAllocation> allocations);
         Character GetCharacter(int id);
+        Task<Character> GetCharacterAsync(int id);
         IQueryable<Character> GetCharacters();
         Character UpdateCharacter(Character character, CharacterUpdate update);
 

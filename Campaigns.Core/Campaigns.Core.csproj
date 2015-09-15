@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseEntity.cs" />
+    <Compile Include="Data\Async.cs" />
     <Compile Include="Data\EFEntityRepository.cs" />
     <Compile Include="Data\IEntityRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

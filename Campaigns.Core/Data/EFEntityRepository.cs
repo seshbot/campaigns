@@ -66,6 +66,11 @@ namespace Campaigns.Core.Data
             return _db.Find(id);
         }
 
+        public Task GetByIdAsync(int id)
+        {
+            return _db.FindAsync(id);
+        }
+
         public T GetByIdNoTracking(int id)
         {
             return _db.AsNoTracking()
@@ -76,6 +81,16 @@ namespace Campaigns.Core.Data
         {
             return AsQueryableIncluding(paths)
                 .FirstOrDefault(e => e.Id == id);
+        }
+
+        public Task GetByIdIncludingAsync(int id, params string[] paths)
+        {
+            DbQuery<T> db = _db;
+            foreach (var path in paths)
+            {
+                db = db.Include(path);
+            }
+            return db.FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public T GetByIdNoTrackingIncluding(int id, params string[] paths)

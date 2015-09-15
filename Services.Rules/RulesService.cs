@@ -89,6 +89,13 @@ namespace Services.Rules
         {
             return _charactersDb.GetByIdIncluding(id, "Sheet.AttributeValues");
         }
+        
+        public Task<Character> GetCharacterAsync(int id)
+        {
+            var result = _charactersDb.GetByIdIncludingAsync(id, "Sheet.AttributeValues");
+
+            return result as Task<Character>;
+        }
 #else
         private IDictionary<int, List<AttributeContribution>> attributeContributionsByTargetId()
         {

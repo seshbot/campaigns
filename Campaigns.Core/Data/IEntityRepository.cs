@@ -17,6 +17,10 @@ namespace Campaigns.Core.Data
 
         T GetByIdNoTrackingIncluding(int id, params string[] paths);
 
+        Task GetByIdAsync(int id);
+
+        Task GetByIdIncludingAsync(int id, params string[] paths);
+
         IQueryable<T> AsQueryable { get; }
 
         IQueryable<T> AsQueryableNoTracking { get; }

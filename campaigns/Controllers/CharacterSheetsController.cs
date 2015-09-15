@@ -14,6 +14,7 @@ using Services.Rules;
 using Campaigns.Core.Data;
 using AutoMapper;
 using Campaigns.Model;
+using System.Threading.Tasks;
 
 namespace Campaigns.Controllers
 {
@@ -116,7 +117,7 @@ namespace Campaigns.Controllers
                 if (ModelState.IsValid)
                 {
                     var newCharacter = CreateCharacter(viewModel.CreateCharacter);
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Details", new { id = newCharacter.Id });
                 }
             }
             catch (DataException)
