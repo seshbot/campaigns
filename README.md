@@ -1,6 +1,8 @@
 # Campaigns is an RPG helper
 Campaigns lets you easily create and update RPG characters and track them over time.
 
+I've deployed (some version!) of this to Azure - [check it out](http://seshbot-campaigns.azurewebsites.net/)
+
 ## Technologies
 I wrote this in MVC 5/Entity Framework 6/Web API/Angular as a learning experience. Don't look to this for best practices - it's mainly a testbed for experimentation.
 
